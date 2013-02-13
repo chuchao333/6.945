@@ -1,0 +1,381 @@
+                MASSACHVSETTS INSTITVTE OF TECHNOLOGY
+      Department of Electrical Engineering and Computer Science
+
+                          6.945 Spring 2013
+                            Problem Set 1
+
+  Issued: Wed. 6 Feb. 2013                    Due: Wed. 13 Feb. 2013
+
+
+General instructions for problem sets:
+   A problem set for this class generally asks you to do some
+programming.  We usually give you a program to read and extend.  You
+should turn in your extensions, in the form of clearly annotated code
+and executions that demonstrate its effectiveness.  We may also ask
+for short essays explaining an idea.  Your answers to these questions
+must be clear and concise: good logic expressed in good English is
+required.  Thank you.
+
+Readings:
+    Review SICP chapter 1
+    For a short but dense description of the Scheme language see
+       http://www.schemers.org/Documents/Standards/R5RS/
+    For particulars of the version we use see
+       MIT/GNU Scheme Reference Manual
+
+Code: load.scm, eq-properties.scm, advice.scm
+
+Documentation:
+ The MIT/GNU Scheme installation instructions and documentation can
+  be found online at http://www.gnu.org/software/mit-scheme/
+ The reference manual is in:
+  http://www.gnu.org/software/mit-scheme/documentation/mit-scheme-ref/
+ The user's manual is in:
+  http://www.gnu.org/software/mit-scheme/documentation/mit-scheme-user/
+
+
+			       Our Goal
+
+Our goal in this class is to learn what we can about making programs
+flexible, so that they can be adapted to uses that we did not
+anticipate when we designed them.  For example, there are elementary
+mechanisms that we can use to change the behavior of a procedure
+without modifying the procedure text.  One such mechanism that we will
+investigate in this first set of exercises is called "advice".  Advice
+procedures are easy to use, and they are often used in debugging, but
+they are rarely used in making permanent modifications to a program.
+We will first examine how such procedures work, and how they can be
+used.  We will then look into the potentialities and limitations of
+this kind of program modification.
+
+			  Advice Procedures
+
+The basic idea of "advice" is that it is possible to modify the
+behavior of a procedure by attaching modifications, composing those
+modifications with the advised procedure.
+
+For example, in MIT/GNU Scheme pi is not defined, but we can fix that
+
+     (define pi (* 4 (atan 1 1)))
+
+     pi
+     ;Value: 3.141592653589793
+
+Unfortunately, this is an inexact number so our sine routine produces
+an inexact answer:
+
+     (sin pi)
+     ;Value: 1.2246467991473532e-16
+
+Suppose we wanted to change the sine routine so that it knew about the
+special symbol symbolic-pi.  We could redefine the sine routine as
+follows:
+
+     (define symbolic-pi 'symbolic-pi)
+
+     (define sin
+       (let ((oldsine sin))
+         (named-lambda (sin x)
+           (cond ((eq? x symbolic-pi) 0)
+                 (else (oldsine x))))))
+
+     (sin symbolic-pi)
+     ;Value: 0
+
+     (sin pi)
+     ;Value: 1.2246467991473532e-16
+
+So, we have advised the sin procedure to have a special value when it
+is passed the symbolic-pi (rather than the numerical pi).  Of course,
+we could do lots of stuff here, such as conditionally bypass oldsine
+or modify its output based on some condition.
+
+
+*Note: named-lambda is just like lambda, except that the procedure
+       name is provided as the first element of the bound-variable
+       list.  This allows the name to be attached to the procedure so
+       the debugger can report it.  The resulting procedure does not
+       expect an argument in that slot: The procedure specified by
+        (named-lambda (foo x y) ...) has the same behavior as
+        (lambda (x y) ...).  Both take two arguments.
+
+			  Formalizing advice
+
+We could formalize this kind of advice with a macro that takes a
+symbol and a wrapper procedure and builds the wrapped procedure
+definition.  Note: subtlety of renaming wrapper to ewrapper...why?
+
+     (define-syntax advise-unary
+       (syntax-rules ()
+	 ((advise-unary p wrapper)
+	  (define p
+	    (let ((saved-p p) (ewrapper wrapper))
+	      (named-lambda (p x)
+		(ewrapper 'p saved-p x)))))))
+
+     (advise-unary sin
+		   (lambda (name oldf x)
+		     (cond ((eq? x symbolic-pi) 0)
+			   ((number? x) (oldf x))
+			   (else
+			    (error "Argument not number" name)))))
+
+And if we don't like the modified sin routine, we can always recover
+the original:
+
+     (define sin (access sin system-global-environment))
+
+However, it would be nicer to have the advisor remember the old
+version so it can be unadvised.  This is easy, using "sticky notes"
+implemented in the library "eq-properties.scm".  The procedures
+eq-put! and eq-get are used to attach and access extra information
+to any piece of data.  This uses an external hash table.
+
+     (define-syntax advise-unary
+       (syntax-rules ()
+	 ((advise-unary p wrapper)
+	  (define p
+	    (let ((saved-p p) (ewrapper wrapper))
+	      (let ((new-p
+		     (named-lambda (p x)
+		       (ewrapper 'p saved-p x))))
+		(eq-put! new-p 'old-version saved-p)
+		new-p))))))
+
+     (define-syntax remove-advice
+       (syntax-rules ()
+         ((remove-advice p)
+          (begin (set! p (eq-get p 'old-version)) 'done))))
+
+So we can remove the advice from sin by:
+
+     (remove-advice sin)
+
+-------------
+Problem 1.1: Warmup
+
+a. The program above is very flaky.  For example, if you remove advice
+   from an unadvised procedure it will set the procedure to #f, which
+   is not what you wanted: probably you should warn the user and do
+   nothing.  Also, you will get nonsense if you try to advise a binary
+   procedure with advise-unary.  It should check that it is being
+   given a sensible procedure.  In section 12.2 of the MIT/GNU Scheme
+   reference manual you can learn how to get the arity of a procedure.
+
+b. The code above works for unary procedures like sin or sqrt.
+   However there are binary procedures and n-ary procedures that we
+   would like to advise.  Write analogous macros to advise binary and
+   n-ary procedures.  Demonstrate that your macros work, by advising
+   cons and +.
+
+*Note: In Scheme we specify a procedure that takes many arguments with
+       a symbol in the position of the bound-variable list, as in
+       (lambda xs ...).  The symbol (here xs) is bound to the list of
+       arguments.  The define syntax for something like addition is
+       (define (+ . xs) ...).  For a fuller description of the syntax
+       of definition see Sections 2.1 and 2.4 of the MIT/GNU Scheme
+       Reference Manual.
+-------------
+
+
+			Advice for Debugging
+
+One common application of advice is in debugging of programs.  For
+example, it is possible to trace a procedure, logging each entry and
+exit.  One example wrappper procedure is:
+
+     (define (full-trace-wrapper procname proc args)
+       (newline)
+       (display ";Entering ") (write procname)
+       (display " with ") (write args)
+       (let ((val (apply proc args)))
+	 (newline)
+	 (display ";Leaving ") (write procname)
+	 (display " Value=") (write val)
+	 val))
+
+
+To trace the sine procedure we can then write
+
+     (advise-nary sin full-trace-wrapper)
+
+
+-------------
+Problem 1.2: Tracing
+
+Sometimes we do not want a complete trace like the one above.  For
+example, we may want to look at only the entries to a procedure, or
+only the exits from the procedure.  Of course, this just requires
+simpler versions of the full-trace-wrapper.
+
+a. One problem with the full-trace-wrapper is that it breaks tail
+   recursion.  Is this essential?  If so, explain why.  If not, show
+   how to make a wrapper that does not break tail recursion.
+
+b. Sometimes we have an iterative procedure that will be entered many
+   times, but will be exited only once, such as the fact-iter
+   procedure:
+
+     (define (fact-iter product counter max-count)
+       (if (> counter max-count)
+           product
+	   (fact-iter (* counter product) (+ counter 1) max-count)))
+
+     (define (fact n) (fact-iter 1 1 n))
+
+   It would be nice to make a special tracing wrapper that could be
+   applied to fact-iter that shows the first entry to fact-iter and
+   the exit, but not the intermediate entries.  Write such a wrapper.
+   Try to make it so that it does not break the tail-recursion of
+   fact-iter where it calls itself.
+   Hint: It can help to use a fluid variable. (See section 2.3 of the
+   MIT/GNU Scheme Reference Manual.)
+
+-------------
+
+			Advice for Authorization
+
+Another potential use for procedural advice is authorization of a user
+or a process to execute a particular operation.  For example, suppose
+we wanted to restrict the use of the sine function to a select set of
+wizards.  (After all, you never know what kind of trouble a newbie
+could get into computing the sines of angles!)  Using advice we could
+modify the sin procedure to check that the process is authorized to
+compute the sine.  We arrange that there is information that the
+authorization wrapper has access to that may contain a key, which if
+matched by the authorization wrapper allows the sin procedure to
+continue.  A very simple and insecure authorization wrapper is:
+
+     (define (authorization-wrapper procname proc args)
+	(cond ((memq (eq-get proc 'authorization-key)
+                     (or (eq-get user-id 'authorizations)
+                         '()))
+	       (apply proc args))
+	      (else
+               (error "Unauthorized access" user-id procname))))
+
+For each procedure that needs authorization we wrap it and provide an
+authorization key.
+
+     (advise-nary sin authorization-wrapper)
+     (eq-put! sin 'authorization-key 'ok-to-sin)
+
+Each user is provided with a set of authorizations.  For example,
+
+     (eq-put! gjs 'authorizations
+              `(ok-to-sin ok-to-cos ok-to-atan ok-to-read-files))
+
+-------------
+Problem 1.3: Authorization
+
+Of course, this is a minimal authorization wrapper.  A real one would
+involve cryptographic mechanisms, for example.  MIT/GNU Scheme
+provides some simple support for such mechanisms.  For example,
+(md5-string "foo") will give a hash string.
+
+a. Construct a better version of the authorization wrapper.
+
+b. Suppose we wanted to put up a version of MIT/GNU Scheme as a
+   server, Which procedures would we want to require authorization
+   for?  (Obvious ones are ones that manipulate the file system.  Are
+   there others?  Why?  This is an opportunity to scan the reference
+   manual.)
+ -------------
+
+		       Advice for Memoization
+
+Another nice idea is memoization: using memory to trade space for
+time.  Dynamic programming is just an application of memoization.
+For example, consider the elementary doubly-recursive procedure for
+computing Fibonacci numbers:
+
+     (define (fib n)
+       (if (< n 2)
+	   n
+	   (+ (fib (- n 2))
+	      (fib (- n 1)))))
+
+This produces an exponential process.  For example, the time to
+compute (fib 30) is about 1.5 seconds (1500 milliseconds) on my
+laptop.
+
+     (show-time
+      (lambda ()
+	(fib 30)))
+     ;process time: 1510 (1500 RUN + 10 GC); real time: 1512
+     ;Value: 832040
+
+And the time to compute (fib 31) is about 1.6 times as long.  (Each
+increment in the argument multiplies the time by the golden ratio.)
+
+     (show-time
+      (lambda ()
+	(fib 31)))
+     ;process time: 2430 (2410 RUN + 20 GC); real time: 2423
+     ;Value: 1346269
+
+So we should never be able to compute (fib 100) by this method.
+
+However, if we remember the values of (fib 99) and (fib 98) the
+computation of (fib 100) takes only one operation.  So let's make a
+wrapper that remembers the values of old arguments and old values:
+
+     (define (memo-wrapper procname proc x)
+       (let ((seen (assv x (eq-get proc 'old-values))))
+	 (if seen
+	     (cdr seen)
+	     (let ((v (proc x)))
+	       (eq-put! proc
+                        'old-values
+                        (cons (cons x v)
+                              (eq-get proc 'old-values)))
+	       v))))
+
+Initialize the memory and add the wrapper.  Note the order of these
+two operations is critical.  (Think about why this is true.)
+
+     (eq-put! fib 'old-values '())
+     (advise-unary fib memo-wrapper)
+
+What a difference this makes!:
+
+     (show-time
+      (lambda ()
+	(fib 30)))
+     ;process time: 0 (0 RUN + 0 GC); real time: 0
+     ;Value: 832040
+
+     (show-time
+      (lambda ()
+	(fib 100)))
+     ;process time: 0 (0 RUN + 0 GC); real time: 0
+     ;Value: 354224848179261915075
+
+-------------
+Problem 1.4: Memoization
+
+a. The wrapper we show remembers all previous computations of the
+   memoized function.  But Fibonacci needs only remember the last two
+   values computed.  Make a memoizer that keeps only a two last
+   values.  Demonstrate that this works for Fibonacci.
+
+b. What about functions with multiple arguments?  Make a memoizer that
+   works for functions of multiple integer arguments.
+-------------
+
+
+			 Moral of this story
+
+There is a lot more to this story than we can handle in one problem
+set.  Advice allows us to write the essential idea of a computation
+simply (such as the doubly-recursive Fibonacci procedure), while
+allowing us to impose modifications that transform its behavior,
+without changing the essential simplicity of the code.  These
+modifications are called cross-cutting concerns.  Indeed, one
+elaboration of the story of procedural advice is the "paradigm" called
+Aspect-oriented Programming.
+(See http://en.wikipedia.org/wiki/Aspect-oriented_programming)
+
+But be careful, this is not a panacea!  It is just one technique.
+There are no magic bullets, just lots of good tools that we should use
+when appropriate.

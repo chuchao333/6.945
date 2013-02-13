@@ -1,0 +1,51 @@
+PS1 textual responses
+Owen C. Derby
+2/13/12
+
+ps1_defs.scm contains all new macros and any other important defines
+ps1_demo.scm demonstrates that the new macros work.
+
+1.1.a see code. I decided to emit a warning (not error) if user tries to remove
+      advice from an unadvised procedure or advise a non-unary procedure using
+      advise-unary.
+
+1.1.b see code.
+
+1.2.a Full-trace-wrapper must break tail recursion. By definition tail-recursion
+      only holds if the last call made is the recursive call. However, by
+      advising with a wrapper which prints out the value returned by a
+      particular call to the procedure, we are breaking the tail recursion
+      property. Since we are intentionally using such a wrapper (to print values
+      when each call to the function returns), we must accept that we will break
+      tail-recusion if we want to print anything after the function exits.
+
+1.2.b Implemented outer-trace-wrapper to only print one entry and exit for
+      advised procedure by redirecting all subsequent output to a different
+      string port. Hackish and breaks tail recursion, but it works. I spent many
+      hours attempting to redefine the procedure called (essentially trying to
+      unadvise the procedure), but I'm afraid I don't know enough about macros
+      to make it work.
+
+1.3.a see code. A better version of the authorization wrapper stores the
+      md5-hash of a password and then requires the user enter the password to
+      use the protected procedure. Each procedure to be protected requires a
+      password be set for it before advising it. After a procedure has been
+      advised with authorization-wrapper, changing the password has no effect.
+      Note: I encountered a bug in using emacs, and found the fix at
+      https://savannah.gnu.org/bugs/?19579
+
+1.3.b Aside from file system-manipulating procedures, we would want to protect
+      the protection procedures themselves. That is, we'd want to protect our
+      advice macros, so that users couldn't remove or override our protection
+      wrappers. We'd also need to protect the md5-string procedure, so that the
+      user can't compromize our security system. Additionally, we'd want to
+      protect all the usual methods which are sanitized/removed in sandboxes:
+      eval, define, etc.
+
+1.4.a see code. I understood/assumed the directions to mean we only need to keep
+      the largest values computed thus far, rather than the two most recently
+      computed. The former is strictly more correct than the latter for the case
+      of calculating fibonacci numbers.
+
+1.4.b see code. The test procedure I use is gcd. (not a computational intensive
+      program, but illustrates working on 2 arguments)
