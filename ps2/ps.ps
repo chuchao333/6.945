@@ -1,0 +1,1755 @@
+%!PS-Adobe-3.0
+%%BoundingBox: 18 36 594 756
+%%Title: letter
+%%Creator: GNU Enscript 1.6.5.2
+%%CreationDate: Sun Jan 20 15:55:34 2013
+%%Orientation: Portrait
+%%Pages: (atend)
+%%DocumentMedia: Letter 612 792 0 () ()
+%%DocumentNeededResources: (atend)
+%%EndComments
+%%BeginProlog
+%%BeginResource: procset Enscript-Prolog 1.6.5 2
+%
+% Procedures.
+%
+
+/_S {	% save current state
+  /_s save def
+} def
+/_R {	% restore from saved state
+  _s restore
+} def
+
+/S {	% showpage protecting gstate
+  gsave
+  showpage
+  grestore
+} bind def
+
+/MF {	% fontname newfontname -> -	make a new encoded font
+  /newfontname exch def
+  /fontname exch def
+
+  /fontdict fontname findfont def
+  /newfont fontdict maxlength dict def
+
+  fontdict {
+    exch
+    dup /FID eq {
+      % skip FID pair
+      pop pop
+    } {
+      % copy to the new font dictionary
+      exch newfont 3 1 roll put
+    } ifelse
+  } forall
+
+  newfont /FontName newfontname put
+
+  % insert only valid encoding vectors
+  encoding_vector length 256 eq {
+    newfont /Encoding encoding_vector put
+  } if
+
+  newfontname newfont definefont pop
+} def
+
+/MF_PS { % fontname newfontname -> -	make a new font preserving its enc
+  /newfontname exch def
+  /fontname exch def
+
+  /fontdict fontname findfont def
+  /newfont fontdict maxlength dict def
+
+  fontdict {
+    exch
+    dup /FID eq {
+      % skip FID pair
+      pop pop
+    } {
+      % copy to the new font dictionary
+      exch newfont 3 1 roll put
+    } ifelse
+  } forall
+
+  newfont /FontName newfontname put
+
+  newfontname newfont definefont pop
+} def
+
+/SF { % fontname width height -> -	set a new font
+  /height exch def
+  /width exch def
+
+  findfont
+  [width 0 0 height 0 0] makefont setfont
+} def
+
+/SUF { % fontname width height -> -	set a new user font
+  /height exch def
+  /width exch def
+
+  /F-gs-user-font MF
+  /F-gs-user-font width height SF
+} def
+
+/SUF_PS { % fontname width height -> -	set a new user font preserving its enc
+  /height exch def
+  /width exch def
+
+  /F-gs-user-font MF_PS
+  /F-gs-user-font width height SF
+} def
+
+/M {moveto} bind def
+/s {show} bind def
+
+/Box {	% x y w h -> -			define box path
+  /d_h exch def /d_w exch def /d_y exch def /d_x exch def
+  d_x d_y  moveto
+  d_w 0 rlineto
+  0 d_h rlineto
+  d_w neg 0 rlineto
+  closepath
+} def
+
+/bgs {	% x y height blskip gray str -> -	show string with bg color
+  /str exch def
+  /gray exch def
+  /blskip exch def
+  /height exch def
+  /y exch def
+  /x exch def
+
+  gsave
+    x y blskip sub str stringwidth pop height Box
+    gray setgray
+    fill
+  grestore
+  x y M str s
+} def
+
+/bgcs { % x y height blskip red green blue str -> -  show string with bg color
+  /str exch def
+  /blue exch def
+  /green exch def
+  /red exch def
+  /blskip exch def
+  /height exch def
+  /y exch def
+  /x exch def
+
+  gsave
+    x y blskip sub str stringwidth pop height Box
+    red green blue setrgbcolor
+    fill
+  grestore
+  x y M str s
+} def
+
+% Highlight bars.
+/highlight_bars {	% nlines lineheight output_y_margin gray -> -
+  gsave
+    setgray
+    /ymarg exch def
+    /lineheight exch def
+    /nlines exch def
+
+    % This 2 is just a magic number to sync highlight lines to text.
+    0 d_header_y ymarg sub 2 sub translate
+
+    /cw d_output_w cols div def
+    /nrows d_output_h ymarg 2 mul sub lineheight div cvi def
+
+    % for each column
+    0 1 cols 1 sub {
+      cw mul /xp exch def
+
+      % for each rows
+      0 1 nrows 1 sub {
+        /rn exch def
+        rn lineheight mul neg /yp exch def
+        rn nlines idiv 2 mod 0 eq {
+	  % Draw highlight bar.  4 is just a magic indentation.
+	  xp 4 add yp cw 8 sub lineheight neg Box fill
+	} if
+      } for
+    } for
+
+  grestore
+} def
+
+% Line highlight bar.
+/line_highlight {	% x y width height gray -> -
+  gsave
+    /gray exch def
+    Box gray setgray fill
+  grestore
+} def
+
+% Column separator lines.
+/column_lines {
+  gsave
+    .1 setlinewidth
+    0 d_footer_h translate
+    /cw d_output_w cols div def
+    1 1 cols 1 sub {
+      cw mul 0 moveto
+      0 d_output_h rlineto stroke
+    } for
+  grestore
+} def
+
+% Column borders.
+/column_borders {
+  gsave
+    .1 setlinewidth
+    0 d_footer_h moveto
+    0 d_output_h rlineto
+    d_output_w 0 rlineto
+    0 d_output_h neg rlineto
+    closepath stroke
+  grestore
+} def
+
+% Do the actual underlay drawing
+/draw_underlay {
+  ul_style 0 eq {
+    ul_str true charpath stroke
+  } {
+    ul_str show
+  } ifelse
+} def
+
+% Underlay
+/underlay {	% - -> -
+  gsave
+    0 d_page_h translate
+    d_page_h neg d_page_w atan rotate
+
+    ul_gray setgray
+    ul_font setfont
+    /dw d_page_h dup mul d_page_w dup mul add sqrt def
+    ul_str stringwidth pop dw exch sub 2 div ul_h_ptsize -2 div moveto
+    draw_underlay
+  grestore
+} def
+
+/user_underlay {	% - -> -
+  gsave
+    ul_x ul_y translate
+    ul_angle rotate
+    ul_gray setgray
+    ul_font setfont
+    0 0 ul_h_ptsize 2 div sub moveto
+    draw_underlay
+  grestore
+} def
+
+% Page prefeed
+/page_prefeed {		% bool -> -
+  statusdict /prefeed known {
+    statusdict exch /prefeed exch put
+  } {
+    pop
+  } ifelse
+} def
+
+% Wrapped line markers
+/wrapped_line_mark {	% x y charwith charheight type -> -
+  /type exch def
+  /h exch def
+  /w exch def
+  /y exch def
+  /x exch def
+
+  type 2 eq {
+    % Black boxes (like TeX does)
+    gsave
+      0 setlinewidth
+      x w 4 div add y M
+      0 h rlineto w 2 div 0 rlineto 0 h neg rlineto
+      closepath fill
+    grestore
+  } {
+    type 3 eq {
+      % Small arrows
+      gsave
+        .2 setlinewidth
+        x w 2 div add y h 2 div add M
+        w 4 div 0 rlineto
+        x w 4 div add y lineto stroke
+
+        x w 4 div add w 8 div add y h 4 div add M
+        x w 4 div add y lineto
+	w 4 div h 8 div rlineto stroke
+      grestore
+    } {
+      % do nothing
+    } ifelse
+  } ifelse
+} def
+
+% EPSF import.
+
+/BeginEPSF {
+  /b4_Inc_state save def    		% Save state for cleanup
+  /dict_count countdictstack def	% Count objects on dict stack
+  /op_count count 1 sub def		% Count objects on operand stack
+  userdict begin
+  /showpage { } def
+  0 setgray 0 setlinecap
+  1 setlinewidth 0 setlinejoin
+  10 setmiterlimit [ ] 0 setdash newpath
+  /languagelevel where {
+    pop languagelevel
+    1 ne {
+      false setstrokeadjust false setoverprint
+    } if
+  } if
+} bind def
+
+/EndEPSF {
+  count op_count sub { pos } repeat	% Clean up stacks
+  countdictstack dict_count sub { end } repeat
+  b4_Inc_state restore
+} bind def
+
+% Check PostScript language level.
+/languagelevel where {
+  pop /gs_languagelevel languagelevel def
+} {
+  /gs_languagelevel 1 def
+} ifelse
+%%EndResource
+%%BeginResource: procset Enscript-Encoding-88591 1.6.5 2
+/encoding_vector [
+/.notdef      	/.notdef      	/.notdef      	/.notdef      	
+/.notdef      	/.notdef      	/.notdef      	/.notdef      	
+/.notdef      	/.notdef      	/.notdef      	/.notdef      	
+/.notdef      	/.notdef      	/.notdef      	/.notdef      	
+/.notdef      	/.notdef      	/.notdef      	/.notdef      	
+/.notdef      	/.notdef      	/.notdef      	/.notdef      	
+/.notdef      	/.notdef      	/.notdef      	/.notdef      	
+/.notdef      	/.notdef      	/.notdef      	/.notdef      	
+/space        	/exclam       	/quotedbl     	/numbersign   	
+/dollar       	/percent      	/ampersand    	/quoteright   	
+/parenleft    	/parenright   	/asterisk     	/plus         	
+/comma        	/hyphen       	/period       	/slash        	
+/zero         	/one          	/two          	/three        	
+/four         	/five         	/six          	/seven        	
+/eight        	/nine         	/colon        	/semicolon    	
+/less         	/equal        	/greater      	/question     	
+/at           	/A            	/B            	/C            	
+/D            	/E            	/F            	/G            	
+/H            	/I            	/J            	/K            	
+/L            	/M            	/N            	/O            	
+/P            	/Q            	/R            	/S            	
+/T            	/U            	/V            	/W            	
+/X            	/Y            	/Z            	/bracketleft  	
+/backslash    	/bracketright 	/asciicircum  	/underscore   	
+/quoteleft    	/a            	/b            	/c            	
+/d            	/e            	/f            	/g            	
+/h            	/i            	/j            	/k            	
+/l            	/m            	/n            	/o            	
+/p            	/q            	/r            	/s            	
+/t            	/u            	/v            	/w            	
+/x            	/y            	/z            	/braceleft    	
+/bar          	/braceright   	/tilde        	/.notdef      	
+/.notdef      	/.notdef      	/.notdef      	/.notdef      	
+/.notdef      	/.notdef      	/.notdef      	/.notdef      	
+/.notdef      	/.notdef      	/.notdef      	/.notdef      	
+/.notdef      	/.notdef      	/.notdef      	/.notdef      	
+/.notdef      	/.notdef      	/.notdef      	/.notdef      	
+/.notdef      	/.notdef      	/.notdef      	/.notdef      	
+/.notdef      	/.notdef      	/.notdef      	/.notdef      	
+/.notdef      	/.notdef      	/.notdef      	/.notdef      	
+/space        	/exclamdown   	/cent         	/sterling     	
+/currency     	/yen          	/brokenbar    	/section      	
+/dieresis     	/copyright    	/ordfeminine  	/guillemotleft	
+/logicalnot   	/hyphen       	/registered   	/macron       	
+/degree       	/plusminus    	/twosuperior  	/threesuperior	
+/acute        	/mu           	/paragraph    	/bullet       	
+/cedilla      	/onesuperior  	/ordmasculine 	/guillemotright	
+/onequarter   	/onehalf      	/threequarters	/questiondown 	
+/Agrave       	/Aacute       	/Acircumflex  	/Atilde       	
+/Adieresis    	/Aring        	/AE           	/Ccedilla     	
+/Egrave       	/Eacute       	/Ecircumflex  	/Edieresis    	
+/Igrave       	/Iacute       	/Icircumflex  	/Idieresis    	
+/Eth          	/Ntilde       	/Ograve       	/Oacute       	
+/Ocircumflex  	/Otilde       	/Odieresis    	/multiply     	
+/Oslash       	/Ugrave       	/Uacute       	/Ucircumflex  	
+/Udieresis    	/Yacute       	/Thorn        	/germandbls   	
+/agrave       	/aacute       	/acircumflex  	/atilde       	
+/adieresis    	/aring        	/ae           	/ccedilla     	
+/egrave       	/eacute       	/ecircumflex  	/edieresis    	
+/igrave       	/iacute       	/icircumflex  	/idieresis    	
+/eth          	/ntilde       	/ograve       	/oacute       	
+/ocircumflex  	/otilde       	/odieresis    	/divide       	
+/oslash       	/ugrave       	/uacute       	/ucircumflex  	
+/udieresis    	/yacute       	/thorn        	/ydieresis    	
+] def
+%%EndResource
+%%EndProlog
+%%BeginSetup
+%%IncludeResource: font Courier-Bold
+%%IncludeResource: font Courier
+/HFpt_w 10 def
+/HFpt_h 10 def
+/Courier /HF-gs-font MF
+/HF /HF-gs-font findfont [HFpt_w 0 0 HFpt_h 0 0] makefont def
+/Courier-Bold /F-gs-font MF
+/F-gs-font 11 11 SF
+/#copies 1 def
+% Pagedevice definitions:
+gs_languagelevel 1 gt {
+  <<
+    /PageSize [612 792] 
+  >> setpagedevice
+} if
+%%BeginResource: procset Enscript-Header-simple 1.6.5 2
+
+/do_header {	% print default simple header
+  gsave
+    d_header_x d_header_y HFpt_h 3 div add translate
+
+    HF setfont
+    user_header_p {
+      5 0 moveto user_header_left_str show
+
+      d_header_w user_header_center_str stringwidth pop sub 2 div
+      0 moveto user_header_center_str show
+
+      d_header_w user_header_right_str stringwidth pop sub 5 sub
+      0 moveto user_header_right_str show
+    } {
+      5 0 moveto fname show
+      45 0 rmoveto fmodstr show
+      45 0 rmoveto pagenumstr show
+    } ifelse
+
+  grestore
+} def
+%%EndResource
+/d_page_w 576 def
+/d_page_h 720 def
+/d_header_x 0 def
+/d_header_y 705 def
+/d_header_w 576 def
+/d_header_h 15 def
+/d_footer_x 0 def
+/d_footer_y 0 def
+/d_footer_w 576 def
+/d_footer_h 0 def
+/d_output_w 576 def
+/d_output_h 705 def
+/cols 1 def
+%%EndSetup
+%%Page: (1) 1
+%%BeginPageSetup
+_S
+18 36 translate
+/pagenum 1 def
+/fname (ps.txt) def
+/fdir (.) def
+/ftail (ps.txt) def
+% User defined strings:
+/fmodstr (Sun Jan 20 15:55:30 2013) def
+/pagenumstr (1) def
+/user_header_p false def
+/user_footer_p false def
+%%EndPageSetup
+do_header
+44.6 691 M
+(                MASSACHVSETTS INSTITVTE OF TECHNOLOGY) s
+44.6 679 M
+(      Department of Electrical Engineering and Computer Science) s
+44.6 655 M
+(                          6.945 Spring 2013) s
+44.6 643 M
+(                            Problem Set 2) s
+44.6 619 M
+(  Issued: Wed. 13 Feb. 2013                    Due: Wed. 20 Feb. 2013) s
+44.6 595 M
+(Reading:) s
+44.6 583 M
+(    SICP sections 2.4 and 2.5) s
+44.6 571 M
+(         \(Tagged data, Data-directed programming, Generic Operations\)) s
+44.6 547 M
+(    If you are really interested in generic dispatch see the paper) s
+44.6 535 M
+(      by Ernst, et al.  Do not obsess over the formal semantics, what ) s
+44.6 523 M
+(      is really interesting here is the way predicate dispatch can be) s
+44.6 511 M
+(      used to subsume other kinds of dispatch.) s
+44.6 499 M
+(http://pag.csail.mit.edu/~mernst/pubs/dispatching-ecoop98-abstract.html) s
+44.6 475 M
+(Code: ghelper.scm, generic-specs.scm, generic-sequences.scm, load.scm) s
+44.6 451 M
+(Documentation:) s
+44.6 439 M
+(      The MIT/GNU Scheme documentation) s
+44.6 427 M
+(         online at http://www.gnu.org/software/mit-scheme/) s
+44.6 391 M
+(                          Generic Operations) s
+44.6 367 M
+(In this problem set we will explore a variety of methods we can use for) s
+44.6 355 M
+(implementing and exploiting generic operations.) s
+44.6 331 M
+(The procedures in the file ghelper.scm are an elegant mechanism for) s
+44.6 319 M
+(implementing generic-operator dispatch, where the handlers for the) s
+44.6 307 M
+(generic operators are specified by the predicates that the arguments) s
+44.6 295 M
+(satisfy.  The file generic-specs.scm is an informal programmer's) s
+44.6 283 M
+(specification of generic operations that can be defined over a variety) s
+44.6 271 M
+(of ordered linear data structures, such as lists, vectors, and) s
+44.6 259 M
+(strings.  The file generic-sequences.scm is a beginning implementation) s
+44.6 247 M
+(of the generic operators specified in generic-specs.scm.) s
+44.6 223 M
+(To load ghelper and generic-sequences incant \(load "load"\) after ) s
+44.6 211 M
+(\(cd "your code directory"\) at a Scheme read-eval-print loop.) s
+44.6 187 M
+(-------------) s
+44.6 175 M
+(Problem 2.1:) s
+44.6 151 M
+(Complete the implementation started in generic-sequences.scm to match) s
+44.6 139 M
+(the specifications in generic-specs.scm.  Demonstrate that each of) s
+44.6 127 M
+(your generic operators  works as specified, by showing examples.  You) s
+44.6 115 M
+(should insert your tests as comments in the code you hand in.) s
+44.6 91 M
+(Notice that the types in the underlying Scheme are not uniformly) s
+44.6 79 M
+(specified, so this is not entirely trivial: in our seed file, for) s
+44.6 67 M
+(example, we had to define vector-null?, list-set!, and vector-append) s
+44.6 55 M
+(just to fill things out a bit.) s
+44.6 43 M
+(-------------) s
+_R
+S
+%%Page: (2) 2
+%%BeginPageSetup
+_S
+18 36 translate
+/pagenum 2 def
+/fname (ps.txt) def
+/fdir (.) def
+/ftail (ps.txt) def
+% User defined strings:
+/fmodstr (Sun Jan 20 15:55:30 2013) def
+/pagenumstr (2) def
+/user_header_p false def
+/user_footer_p false def
+%%EndPageSetup
+do_header
+44.6 679 M
+(Operations like sequence:append can be extended to allow the) s
+44.6 667 M
+(combination of unlike sequences.  For example, we might expect to be) s
+44.6 655 M
+(able to write ) s
+44.6 631 M
+(    \(sequence:append \(list 'a 'b 'c\) \(vector 'd 'e 'f\)\)) s
+44.6 607 M
+(and get back the list \(a b c d e f\), assuming that we want a sequence) s
+44.6 595 M
+(of the first argument type to be the sequence type of the result.) s
+44.6 571 M
+(One way to implement this sort of thing is to write specific handlers) s
+44.6 559 M
+(for all the combinations of types we might want.  This may be a large) s
+44.6 547 M
+(problem.  However, the problem can be mitigated by using coercions,) s
+44.6 535 M
+(such as vector->list, list->vector, etc.  The cost of doing the) s
+44.6 523 M
+(coercions is the construction of a new intermediate data structure) s
+44.6 511 M
+(that is not needed in the result.  This may or may not be important,) s
+44.6 499 M
+(depending on the application.  With coercions, we make up and use new) s
+44.6 487 M
+(combinators to help construct the generic operator entries:) s
+44.6 463 M
+(     \(define \(compose-1st-arg f g\)) s
+44.6 451 M
+(       \(lambda \(x y\) \(f \(g x\) y\)\)\)) s
+44.6 427 M
+(     \(define \(compose-2nd-arg f g\)) s
+44.6 415 M
+(       \(lambda \(x y\) \(f x \(g y\)\)\)\)) s
+44.6 391 M
+(Using these we can write such things as:) s
+44.6 367 M
+(     \(defhandler generic:binary-append) s
+44.6 355 M
+(       \(compose-2nd-arg vector-append list->vector\)) s
+44.6 343 M
+(       vector? list?\)) s
+44.6 319 M
+(     \(defhandler generic:binary-append) s
+44.6 307 M
+(       \(compose-2nd-arg append vector->list\)) s
+44.6 295 M
+(       list? vector?\)) s
+44.6 259 M
+(-------------) s
+44.6 247 M
+(Problem 2.2:) s
+44.6 223 M
+(Examine the generic specifications.  What generalizations that mix) s
+44.6 211 M
+(combinations of sequence types may be useful?  Amend the specification) s
+44.6 199 M
+(document so as to include the generalization.  \(Turn in the amended) s
+44.6 187 M
+(specification sheet with your changes clearly indicated.\)  Amend your) s
+44.6 175 M
+(implementation to make these generalizations.) s
+44.6 151 M
+(Some of the coercions that you may need are provided by Scheme, but) s
+44.6 139 M
+(others may need to be written, such as vector->string.  \(Consult the) s
+44.6 127 M
+(online MIT/GNU Scheme reference manual to see what is and is not) s
+44.6 115 M
+(provided.\)) s
+44.6 103 M
+(-------------) s
+_R
+S
+%%Page: (3) 3
+%%BeginPageSetup
+_S
+18 36 translate
+/pagenum 3 def
+/fname (ps.txt) def
+/fdir (.) def
+/ftail (ps.txt) def
+% User defined strings:
+/fmodstr (Sun Jan 20 15:55:30 2013) def
+/pagenumstr (3) def
+/user_header_p false def
+/user_footer_p false def
+%%EndPageSetup
+do_header
+44.6 679 M
+(The generic procedure sequence:append also illustrates the problem) s
+44.6 667 M
+(that we must arbitrarily select the type of the output value for each) s
+44.6 655 M
+(generic procedure.  However, the type required may be different) s
+44.6 643 M
+(depending upon the way that value will be used.  For example, ) s
+44.6 631 M
+(complex numbers are best expressed in polar form if we intend to) s
+44.6 619 M
+(multiply them, whereas they are best expressed in rectangular form if) s
+44.6 607 M
+(we intend to add them.  Automagically knowing the right form is itself) s
+44.6 595 M
+(an interesting and complicated problem \(that we may address later in) s
+44.6 583 M
+(this subject\) but it may be useful, as an intermediate solution, to) s
+44.6 571 M
+(allow the user to specify the desired output type for each call site.) s
+44.6 559 M
+(This provides an advantage over explicit after-the-fact coercion of) s
+44.6 547 M
+(the output by the user, because it gives the dispatch mechanism the) s
+44.6 535 M
+(ability to select what may be the best way to accomplish the desired) s
+44.6 523 M
+(result.  For example, it may be much more expensive to develop the) s
+44.6 511 M
+(answer the wrong format than to develop it in the desired format.) s
+44.6 487 M
+(A user might specify the type of the result of the sequence:append) s
+44.6 475 M
+(operation by giving an \(optional\) first argument that is a type) s
+44.6 463 M
+(predicate as follows:) s
+44.6 439 M
+(If a vector is desired the user could specify) s
+44.6 415 M
+(  \(sequence:append vector? \(list 'a 'b 'c\) \(vector 'd 'e 'f\)\)) s
+44.6 391 M
+(if a list is desired the user could specify) s
+44.6 367 M
+(  \(sequence:append list? \(list 'a 'b 'c\) \(vector 'd 'e 'f\)\)) s
+44.6 343 M
+(the system default is specified by omitting the type predicate) s
+44.6 319 M
+(  \(sequence:append \(list 'a 'b 'c\) \(vector 'd 'e 'f\)\)) s
+44.6 295 M
+(-------------) s
+44.6 283 M
+(Problem 2.3) s
+44.6 259 M
+(Is this a good idea?  \(Please state and argue your opinion.\)) s
+44.6 247 M
+(Are there disadvantages to this syntactic scheme?  Do you have a) s
+44.6 235 M
+(better idea?) s
+44.6 211 M
+(What changes would you have to make in the ghelper.scm file to) s
+44.6 199 M
+(implement some form of target selection \(either the suggestion above) s
+44.6 187 M
+(or your better idea\)?  For example, how would make-generic-operator) s
+44.6 175 M
+(have to change?  defhandler?  Implement your changes and test) s
+44.6 163 M
+(them.) s
+44.6 151 M
+(-------------) s
+_R
+S
+%%Page: (4) 4
+%%BeginPageSetup
+_S
+18 36 translate
+/pagenum 4 def
+/fname (ps.txt) def
+/fdir (.) def
+/ftail (ps.txt) def
+% User defined strings:
+/fmodstr (Sun Jan 20 15:55:30 2013) def
+/pagenumstr (4) def
+/user_header_p false def
+/user_footer_p false def
+%%EndPageSetup
+do_header
+44.6 679 M
+(The code for sequence:append illustrates another interesting problem.) s
+44.6 667 M
+(Our generic dispatch program does not allow us to make generic) s
+44.6 655 M
+(operations with unspecified arity -- that take many arguments -- such) s
+44.6 643 M
+(as addition.  We programmed around that restriction by defining a) s
+44.6 631 M
+(binary generic operation and then using a folding reduction) s
+44.6 619 M
+(\(fold-right\) to extend the binary operation to take an arbitrary) s
+44.6 607 M
+(number of arguments.  However, the folding reduction needs to know the) s
+44.6 595 M
+(null sequence of the type being constructed.  Alternatively, we could) s
+44.6 583 M
+(have extended the generic dispatch to allow creation of procedures) s
+44.6 571 M
+(with unspecified arity.  This would allow us to move the folding to) s
+44.6 559 M
+(the type-specific procedures rather than make it a wrapper around the) s
+44.6 547 M
+(binary generic procedure.) s
+44.6 523 M
+(-------------) s
+44.6 511 M
+(Problem 2.4) s
+44.6 487 M
+(Is this a good idea?  \(Please state and argue your opinion.\)) s
+44.6 475 M
+(How does this interact with Problem 2.3 above?) s
+44.6 451 M
+(Assuming that we want to do this, what changes would you have to make) s
+44.6 439 M
+(in the ghelper.scm file?  For example, how would make-generic-operator) s
+44.6 427 M
+(have to change?  defhandler?  We do not want you to actually) s
+44.6 415 M
+(implement these changes, just think about what would have to be done) s
+44.6 403 M
+(and informally describe your conclusions.  ) s
+44.6 391 M
+(-------------) s
+44.6 355 M
+(Ben Bitdiddle is pleased with our generic sequences but notes that,) s
+44.6 343 M
+(beyond generic N-tuples, it is useful also to have generic sets.  He) s
+44.6 331 M
+(proposes that we further extend our language with:) s
+44.6 307 M
+(  \(generic:sequence->set <sequence>\)) s
+44.6 295 M
+(    Returns a list corresponding to <sequence> with no duplicates.) s
+44.6 283 M
+(    Duplication is determined using EQUAL? \(not EQ? nor EQV?\).) s
+44.6 259 M
+(  The remaining traditional set operations are straightforward:) s
+44.6 235 M
+(  \(set:equal?         <set-1> <set-2>\)) s
+44.6 223 M
+(  \(set:union          <set-1> <set-2>\)) s
+44.6 211 M
+(  \(set:intersection   <set-1> <set-2>\)) s
+44.6 199 M
+(  \(set:difference     <set-1> <set-2>\) - E.g. {A,B,C}-{9,B,D}={A,C}) s
+44.6 187 M
+(  \(set:strict-subset? <set-1> <set-2>\)) s
+44.6 163 M
+(Alyssa P. Hacker is quick to point out that an efficient way to) s
+44.6 151 M
+(implement sets is as sorted, irredundant lists.  She adds, ``Of) s
+44.6 139 M
+(course, this would require a generic:less? predicate to induce a total) s
+44.6 127 M
+(order on the potential set elements.'') s
+_R
+S
+%%Page: (5) 5
+%%BeginPageSetup
+_S
+18 36 translate
+/pagenum 5 def
+/fname (ps.txt) def
+/fdir (.) def
+/ftail (ps.txt) def
+% User defined strings:
+/fmodstr (Sun Jan 20 15:55:30 2013) def
+/pagenumstr (5) def
+/user_header_p false def
+/user_footer_p false def
+%%EndPageSetup
+do_header
+44.6 679 M
+(To that end, Alyssa proposes the following ordering on types of objects:) s
+44.6 655 M
+(     null < Boolean < char < number < symbol < string < vector < list) s
+44.6 631 M
+(She notes that MIT Scheme already provides handy implementations of) s
+44.6 619 M
+(each of:  char<?, <, symbol<? and string<?.  Adding that null<? and) s
+44.6 607 M
+(boolean<? are straightforward to define and that vector<? can just) s
+44.6 595 M
+(cheat and resort to list<? \(for now\), she cautions that list<?, on the) s
+44.6 583 M
+(other hand, must take special care to ensure that:) s
+44.6 559 M
+(     \(generic:less? x y\)  implies  \(not \(generic:less? y x\)\)) s
+44.6 535 M
+(...in order to be well defined \(and, thus, well behaved\), although) s
+44.6 523 M
+(list<? can, of course, leverage generic:less? in any recursive) s
+44.6 511 M
+(subexpression predications.) s
+44.6 487 M
+(Louis Reasoner, ignoring this advice, proposes the following) s
+44.6 475 M
+(implementation of list<?:) s
+44.6 451 M
+(\(define \(list<? list-1 list-2\)) s
+44.6 439 M
+(  \(let \(\(len-1 \(length list-1\)\) \(len-2 \(length list-2\)\)\)) s
+44.6 427 M
+(    \(cond \(\(< len-1 len-2\) #t\)) s
+44.6 415 M
+(          \(\(> len-1 len-2\) #f\)) s
+44.6 403 M
+(          ;; Invariant:  equal lengths) s
+44.6 391 M
+(          \(\(null? list-1\) #f\)           ; same) s
+44.6 379 M
+(          \(else) s
+44.6 367 M
+(           \(or \(generic:less? \(car list-1\) \(car list-2\)\)) s
+44.6 355 M
+(               \(generic:less? \(cdr list-1\) \(cdr list-2\)\)\)\)\)\)\)) s
+44.6 331 M
+(Alyssa counters that the following is more appropriate:) s
+44.6 307 M
+(\(define \(list<? list-1 list-2\)) s
+44.6 295 M
+(  \(let \(\(len-1 \(length list-1\)\) \(len-2 \(length list-2\)\)\)) s
+44.6 283 M
+(    \(cond \(\(< len-1 len-2\) #t\)) s
+44.6 271 M
+(          \(\(> len-1 len-2\) #f\)) s
+44.6 259 M
+(          ;; Invariant:  equal lengths) s
+44.6 247 M
+(          \(else) s
+44.6 235 M
+(           \(let prefix<? \(\(list-1 list-1\) \(list-2 list-2\)\)) s
+44.6 223 M
+(             \(cond \(\(null? list-1\) #f\)  ; same) s
+44.6 211 M
+(                   \(\(generic:less? \(car list-1\) \(car list-2\)\) #t\)) s
+44.6 199 M
+(                   \(\(generic:less? \(car list-2\) \(car list-1\)\) #f\)) s
+44.6 187 M
+(                   \(else \(prefix<? \(cdr list-1\) \(cdr list-2\)\)\)\)\)\)\)\)\)) s
+44.6 163 M
+(As a parting shot, Alyssa also advises that entering N^2 items into the) s
+44.6 151 M
+(generic dispatch table can be avoided by just defining generic:less?) s
+44.6 139 M
+(outright, as per:) s
+44.6 115 M
+(\(define \(generic:less? x y\)) s
+44.6 103 M
+(  \(cond \(\(null?    x\) \(if \(null?    y\) \(null<?    x y\) #t\)\)) s
+44.6 91 M
+(        \(\(null?    y\) #f\)) s
+44.6 79 M
+(        \(\(boolean? x\) \(if \(boolean? y\) \(boolean<? x y\) #t\)\)) s
+44.6 67 M
+(        \(\(boolean? y\) #f\)) s
+44.6 55 M
+(        ...) s
+44.6 43 M
+(        \(else \(error "Unrecognized data type" x\)\)\)\)) s
+_R
+S
+%%Page: (6) 6
+%%BeginPageSetup
+_S
+18 36 translate
+/pagenum 6 def
+/fname (ps.txt) def
+/fdir (.) def
+/ftail (ps.txt) def
+% User defined strings:
+/fmodstr (Sun Jan 20 15:55:30 2013) def
+/pagenumstr (6) def
+/user_header_p false def
+/user_footer_p false def
+%%EndPageSetup
+do_header
+44.6 679 M
+(-------------) s
+44.6 667 M
+(Problem 2.5:) s
+44.6 643 M
+(A. What's wrong with Louis' implementation of the list<? predicate?) s
+44.6 631 M
+(   Give a simple example and a brief explanation of what problems) s
+44.6 619 M
+(   this would cause if it were used in generic:less? to sort sets.) s
+44.6 595 M
+(B. Briefly critique Alyssa's suggesting for implementing generic:less?) s
+44.6 583 M
+(   as an explicit case analysis versus using the dispatch table.) s
+44.6 559 M
+(C. Implement and demonstrate a generic:less? operation using Alyssa's) s
+44.6 547 M
+(   total ordering of data types \(and her list<? code\), but using the) s
+44.6 535 M
+(   generic dispatch mechanism instead of an explicit conditional shown) s
+44.6 523 M
+(   above.) s
+44.6 511 M
+(-------------) s
+44.6 475 M
+(The system for implementing generic operations that we have looked at) s
+44.6 463 M
+(so far in this problem set is extremely general and flexible: the) s
+44.6 451 M
+(dispatch to a handler is based on arbitrary predicates applied to) s
+44.6 439 M
+(the arguments.  Most generic operation systems are more constrained,) s
+44.6 427 M
+(in that the arguments are presumed to have types that are determined) s
+44.6 415 M
+(either statically by some declaration mechanism or by a type tag that) s
+44.6 403 M
+(is associated with the argument data.  For example, in the SICP) s
+44.6 391 M
+(readings for this problem set, the data is tagged and the dispatch is) s
+44.6 379 M
+(based on these tags.  Such a tagged-data system has important) s
+44.6 367 M
+(advantages of efficiency, but it gives up some flexibility.  ) s
+44.6 331 M
+(-------------) s
+44.6 319 M
+(Problem 2.6:) s
+44.6 295 M
+(How much does dispatch on predicates cost?  What is the fundamental) s
+44.6 283 M
+(efficiency problem here?  Imagine that we have a system with tagged) s
+44.6 271 M
+(data, but that we test for the tags with predicates.  What can be done) s
+44.6 259 M
+(with the data tags that can eliminate much of the work of the) s
+44.6 247 M
+(predicate-based system? ) s
+44.6 223 M
+(On the other hand, what do we give up in a more conventional system,) s
+44.6 211 M
+(such as the one outlined in SICP, by contrast to the predicate-based) s
+44.6 199 M
+(system?  What is an example of lost flexibility?) s
+44.6 175 M
+(Under what circumstances could you build a generic dispatch system) s
+44.6 163 M
+(with zero runtime overhead?  What flexibility would you be giving up?) s
+44.6 151 M
+(What about a system with very little or constant-time overhead?) s
+44.6 127 M
+(Write a few clear paragraphs expounding on these ideas.  Try to) s
+44.6 115 M
+(separate accident from essence.  \(Some aspects of a system are) s
+44.6 103 M
+(consequences of accidental choices--ones that could easily be) s
+44.6 91 M
+(changed--such as the use of a hash table rather than an association) s
+44.6 79 M
+(list.  Other aspects are essential in that no local modifications can) s
+44.6 67 M
+(significantly change the behavior.\)) s
+44.6 55 M
+(-------------) s
+_R
+S
+%%Page: (7) 7
+%%BeginPageSetup
+_S
+18 36 translate
+/pagenum 7 def
+/fname (ps.txt) def
+/fdir (.) def
+/ftail (ps.txt) def
+% User defined strings:
+/fmodstr (Sun Jan 20 15:55:30 2013) def
+/pagenumstr (7) def
+/user_header_p false def
+/user_footer_p false def
+%%EndPageSetup
+do_header
+44.6 679 M
+(;;;;            Generic sequence operations) s
+44.6 667 M
+(;;;                   generic-specs.scm) s
+44.6 643 M
+(;;; There are many kinds of data that can be used to represent sequences: ) s
+44.6 631 M
+(;;;     examples include strings, lists, and vectors.) s
+44.6 607 M
+(;;; There are operations that can be defined for all sequence types.) s
+44.6 583 M
+(;;;                    Constructing) s
+44.6 571 M
+(;;;) s
+44.6 559 M
+(;;; \(sequence:construct <sequence-type> <item-1> ... <item-n>\)) s
+44.6 547 M
+(;;;    Constructs a new sequence of the given type and of size n with) s
+44.6 535 M
+(;;;    the given elements: item-1 ... item-n) s
+44.6 511 M
+(;;; \(sequence:null <sequence-type>\)) s
+44.6 499 M
+(;;;    Produces the null sequence of the given type) s
+44.6 463 M
+(;;;                     Selecting) s
+44.6 451 M
+(;;;) s
+44.6 439 M
+(;;; \(sequence:ref <sequence> <i>\)) s
+44.6 427 M
+(;;;    Returns the ith element of the sequence.  We use zero-based) s
+44.6 415 M
+(;;;    indexing, so for a sequence of length n the ith item is) s
+44.6 403 M
+(;;;    referenced by \(sequence:ref <sequence> <i-1>\).) s
+44.6 379 M
+(;;; \(sequence:size <sequence>\)) s
+44.6 367 M
+(;;;    Returns the number of elements in the sequence.) s
+44.6 343 M
+(;;; \(sequence:type <sequence>\)) s
+44.6 331 M
+(;;;    Returns the predicate defining the type of the sequence given.) s
+44.6 295 M
+(;;;                     Testing) s
+44.6 283 M
+(;;;) s
+44.6 271 M
+(;;; \(sequence:null? <sequence>\)) s
+44.6 259 M
+(;;;    Returns #t if the sequence is null, otherwise returns #f.) s
+44.6 235 M
+(;;; \(sequence:equal? <sequence-1> <sequence-2>\)) s
+44.6 223 M
+(;;;    Returns #t if the sequences are of the same type and have equal) s
+44.6 211 M
+(;;;    elements in the same order, otherwise returns #f.) s
+44.6 175 M
+(;;;                     Mutation) s
+44.6 163 M
+(;;;) s
+44.6 151 M
+(;;; Some sequences are immutable, while others can be changed.  ) s
+44.6 139 M
+(;;;) s
+44.6 127 M
+(;;; For those that can be modified we can change an element:) s
+44.6 115 M
+(;;;) s
+44.6 103 M
+(;;; \(sequence:set! <sequence> <i> <v>\) ) s
+44.6 91 M
+(;;;    Sets the ith element of the sequence to v.) s
+_R
+S
+%%Page: (8) 8
+%%BeginPageSetup
+_S
+18 36 translate
+/pagenum 8 def
+/fname (ps.txt) def
+/fdir (.) def
+/ftail (ps.txt) def
+% User defined strings:
+/fmodstr (Sun Jan 20 15:55:30 2013) def
+/pagenumstr (8) def
+/user_header_p false def
+/user_footer_p false def
+%%EndPageSetup
+do_header
+44.6 679 M
+(;;;                  Cutting and Pasting) s
+44.6 667 M
+(;;;) s
+44.6 655 M
+(;;;  \(sequence:subsequence <sequence> <start> <end>\)) s
+44.6 643 M
+(;;;    The arguments start and end must be exact integers such that ) s
+44.6 631 M
+(;;;       0 <= start <= end <= \(sequence:size <sequence>\).) s
+44.6 619 M
+(;;;    Returns a new sequence of the same type as the given sequence,) s
+44.6 607 M
+(;;;    of size end-start with elements selected from the given sequence.) s
+44.6 595 M
+(;;;    The new sequence starts with the element of the given sequence) s
+44.6 583 M
+(;;;    referenced by start.  It ends with the element of the given) s
+44.6 571 M
+(;;;    sequence referenced by end-1.) s
+44.6 547 M
+(;;; \(sequence:append <sequence-1> ... <sequence-n>\)) s
+44.6 535 M
+(;;;    Requires that the sequences are all of the same type.  Returns) s
+44.6 523 M
+(;;;    a new sequence of the type, formed by concatenating the) s
+44.6 511 M
+(;;;    elements of the given sequences.  The size of the new sequence) s
+44.6 499 M
+(;;;    is the sum of the sizes of the given sequences.) s
+44.6 475 M
+(;;;                      Iterators) s
+44.6 463 M
+(;;;) s
+44.6 451 M
+(;;; \(sequence:generate <sequence-type> <n> <function>\)) s
+44.6 439 M
+(;;;    Makes a new sequence of the given sequence type, of size n.) s
+44.6 427 M
+(;;;    The ith element of the new sequence is the value of the ) s
+44.6 415 M
+(;;;    function at the index i.) s
+44.6 391 M
+(;;; \(sequence:map <function> <seq-1> ... <seq-n>\)) s
+44.6 379 M
+(;;;    Requires that the sequences given are of the same size and) s
+44.6 367 M
+(;;;    type, and that the arity of the function is n.  The ith element) s
+44.6 355 M
+(;;;    of the new sequence is the value of the function applied to the) s
+44.6 343 M
+(;;;    n ith elements of the given sequences.) s
+44.6 319 M
+(;;; \(sequence:for-each <procedure> <seq-1> ... <seq-n>\)) s
+44.6 307 M
+(;;;    Requires that the sequences given are of the same size and) s
+44.6 295 M
+(;;;    type, and that the arity of the procedure is n.  Applies the) s
+44.6 283 M
+(;;;    procedure to the n ith elements of the given sequences;) s
+44.6 271 M
+(;;;    discards the value.  This is done for effect.) s
+44.6 247 M
+(;;;                 Filtration and Search) s
+44.6 235 M
+(;;;) s
+44.6 223 M
+(;;; \(sequence:filter <sequence> <predicate>\)) s
+44.6 211 M
+(;;;    Returns a new sequence with exactly those elements of the given) s
+44.6 199 M
+(;;;    sequence for which the predicate is true \(does not return #f\).) s
+44.6 187 M
+(;;;) s
+44.6 175 M
+(;;; \(sequence:get-index <sequence> <predicate>\)) s
+44.6 163 M
+(;;;    Returns the index of the first element of the sequence that) s
+44.6 151 M
+(;;;    satisfies the predicate.  Returns #f if no element of the) s
+44.6 139 M
+(;;;    sequence satisfies the predicate.) s
+44.6 127 M
+(;;;) s
+44.6 115 M
+(;;; \(sequence:get-element <sequence> <predicate>\)) s
+44.6 103 M
+(;;;    Returns the first element of the sequence that satisfies the) s
+44.6 91 M
+(;;;    predicate.  Returns #f if no element of the sequence satisfies) s
+44.6 79 M
+(;;;    the predicate.) s
+_R
+S
+%%Page: (9) 9
+%%BeginPageSetup
+_S
+18 36 translate
+/pagenum 9 def
+/fname (ps.txt) def
+/fdir (.) def
+/ftail (ps.txt) def
+% User defined strings:
+/fmodstr (Sun Jan 20 15:55:30 2013) def
+/pagenumstr (9) def
+/user_header_p false def
+/user_footer_p false def
+%%EndPageSetup
+do_header
+44.6 679 M
+(;;;                    Accumulation) s
+44.6 667 M
+(;;;) s
+44.6 655 M
+(;;; \(sequence:fold-right <function> <initial> <sequence>\)) s
+44.6 643 M
+(;;;    Returns the result of applying the given binary function,) s
+44.6 631 M
+(;;;    from the right, starting with the initial value.) s
+44.6 619 M
+(;;;    For example, ) s
+44.6 607 M
+(;;;      \(sequence:fold-right list 'end '\(a b c\)\)) s
+44.6 595 M
+(;;;           => \(a \(b \(c end\)\)\)) s
+44.6 571 M
+(;;;) s
+44.6 559 M
+(;;; \(sequence:fold-left <function> <initial> <sequence>\)) s
+44.6 547 M
+(;;;    Returns the result of applying the given binary function,) s
+44.6 535 M
+(;;;    starting with the initial value, from the left.) s
+44.6 523 M
+(;;;    For example, ) s
+44.6 511 M
+(;;;      \(sequence:fold-left list 'start '\(a b c\)\)) s
+44.6 499 M
+(;;;           => \(\(\(start a\) b\) c\)) s
+_R
+S
+%%Page: (10) 10
+%%BeginPageSetup
+_S
+18 36 translate
+/pagenum 10 def
+/fname (ps.txt) def
+/fdir (.) def
+/ftail (ps.txt) def
+% User defined strings:
+/fmodstr (Sun Jan 20 15:55:30 2013) def
+/pagenumstr (10) def
+/user_header_p false def
+/user_footer_p false def
+%%EndPageSetup
+do_header
+44.6 679 M
+(;;;;    Generic sequence operator definitions) s
+44.6 667 M
+(;;;            generic-sequences.scm) s
+44.6 643 M
+(;;; First we declare the operators we want to be generic.) s
+44.6 631 M
+(;;;  Each declaration specifies the arity \(number of arguments\).) s
+44.6 619 M
+(;;;  It may specify a name and a default operation, if necessary.) s
+44.6 595 M
+(\(define sequence:null) s
+44.6 583 M
+(  \(make-generic-operator 1\)\)) s
+44.6 547 M
+(\(define sequence:ref) s
+44.6 535 M
+(  \(make-generic-operator 2\)\)) s
+44.6 511 M
+(\(define sequence:size) s
+44.6 499 M
+(  \(make-generic-operator 1\)\)) s
+44.6 475 M
+(\(define sequence:type) s
+44.6 463 M
+(  \(make-generic-operator 1\)\)) s
+44.6 439 M
+(\(define sequence:null?) s
+44.6 427 M
+(  \(make-generic-operator 1\)\)) s
+44.6 403 M
+(\(define sequence:equal?) s
+44.6 391 M
+(  \(make-generic-operator 2\)\)) s
+44.6 367 M
+(\(define sequence:set!) s
+44.6 355 M
+(  \(make-generic-operator 3\)\)) s
+44.6 331 M
+(\(define sequence:subsequence) s
+44.6 319 M
+(  \(make-generic-operator 3\)\)) s
+44.6 283 M
+(;;; sequence:append takes multiple arguments.  It is defined in terms) s
+44.6 271 M
+(;;; of a binary generic append that takes a sequence and a list of) s
+44.6 259 M
+(;;; sequences.) s
+44.6 235 M
+(\(define \(sequence:append . sequences\)) s
+44.6 223 M
+(  \(if \(null? sequences\)) s
+44.6 211 M
+(      \(error "Need at least one sequence for append"\)\)) s
+44.6 199 M
+(  \(let \(\(type? \(sequence:type \(car sequences\)\)\)\)) s
+44.6 187 M
+(    \(if \(not \(for-all? \(cdr sequences\) type?\)\)) s
+44.6 175 M
+(        \(error "All sequences for append must be of the same type") s
+44.6 163 M
+(               sequences\)\)) s
+44.6 151 M
+(    \(fold-right generic:binary-append \(sequence:null type?\) sequences\)\)\)) s
+44.6 127 M
+(\(define generic:binary-append \(make-generic-operator 2\)\)) s
+_R
+S
+%%Page: (11) 11
+%%BeginPageSetup
+_S
+18 36 translate
+/pagenum 11 def
+/fname (ps.txt) def
+/fdir (.) def
+/ftail (ps.txt) def
+% User defined strings:
+/fmodstr (Sun Jan 20 15:55:30 2013) def
+/pagenumstr (11) def
+/user_header_p false def
+/user_footer_p false def
+%%EndPageSetup
+do_header
+44.6 679 M
+(;;; Implementations of the generic operators.) s
+44.6 655 M
+(\(define \(any? x\) #t\)) s
+44.6 643 M
+(\(define \(constant val\) \(lambda \(x\) val\)\)) s
+44.6 631 M
+(\(define \(is-exactly val\) \(lambda \(x\) \(eq? x val\)\)\)) s
+44.6 607 M
+(\(defhandler sequence:null \(constant ""\)    \(is-exactly string?\)\)) s
+44.6 595 M
+(\(defhandler sequence:null \(constant '\(\)\)   \(is-exactly list?\)\)) s
+44.6 583 M
+(\(defhandler sequence:null \(constant #\(\)\)   \(is-exactly vector?\)\)) s
+44.6 559 M
+(\(defhandler sequence:ref string-ref string? exact-nonnegative-integer?\)) s
+44.6 547 M
+(\(defhandler sequence:ref list-ref   list?   exact-nonnegative-integer?\)) s
+44.6 535 M
+(\(defhandler sequence:ref vector-ref vector? exact-nonnegative-integer?\)) s
+44.6 511 M
+(\(defhandler sequence:size string-length     string?\)) s
+44.6 499 M
+(\(defhandler sequence:size length            list?\)) s
+44.6 487 M
+(\(defhandler sequence:size vector-length     vector?\)) s
+44.6 463 M
+(\(defhandler sequence:type \(constant string?\)     string?\)) s
+44.6 451 M
+(\(defhandler sequence:type \(constant list?\)       list?\)) s
+44.6 439 M
+(\(defhandler sequence:type \(constant vector?\)     vector?\)) s
+44.6 403 M
+(\(define \(vector-null? v\) \(= \(vector-length v\) 0\)\)) s
+44.6 379 M
+(\(defhandler sequence:null? string-null?     string?\)) s
+44.6 367 M
+(\(defhandler sequence:null? null?            list?\)) s
+44.6 355 M
+(\(defhandler sequence:null? vector-null?     vector?\)) s
+44.6 319 M
+(;;; To assign to the ith element of a list:) s
+44.6 295 M
+(\(define \(list-set! list i val\)) s
+44.6 283 M
+(  \(cond \(\(null? list\)) s
+44.6 271 M
+(         \(error "List does not have enough elements" i\)\)) s
+44.6 259 M
+(        \(\(= i 0\) \(set-car! list val\)\)) s
+44.6 247 M
+(        \(else \(list-set! \(cdr list\) \(- i 1\) val\)\)\)\)) s
+44.6 223 M
+(\(defhandler sequence:set! string-set!) s
+44.6 211 M
+(                  string? exact-nonnegative-integer? any?\)) s
+44.6 199 M
+(\(defhandler sequence:set! list-set!) s
+44.6 187 M
+(                  list?   exact-nonnegative-integer? any?\)) s
+44.6 175 M
+(\(defhandler sequence:set! vector-set!) s
+44.6 163 M
+(                  vector? exact-nonnegative-integer? any?\)) s
+_R
+S
+%%Page: (12) 12
+%%BeginPageSetup
+_S
+18 36 translate
+/pagenum 12 def
+/fname (ps.txt) def
+/fdir (.) def
+/ftail (ps.txt) def
+% User defined strings:
+/fmodstr (Sun Jan 20 15:55:30 2013) def
+/pagenumstr (12) def
+/user_header_p false def
+/user_footer_p false def
+%%EndPageSetup
+do_header
+44.6 679 M
+(\(defhandler sequence:subsequence substring) s
+44.6 667 M
+(          string? exact-nonnegative-integer? exact-nonnegative-integer?\)) s
+44.6 643 M
+(\(defhandler sequence:subsequence sublist) s
+44.6 631 M
+(          list? exact-nonnegative-integer?   exact-nonnegative-integer?\)) s
+44.6 607 M
+(\(defhandler sequence:subsequence subvector) s
+44.6 595 M
+(          vector? exact-nonnegative-integer? exact-nonnegative-integer?\)) s
+44.6 559 M
+(\(define \(vector-append v1 v2\)) s
+44.6 547 M
+(  \(let \(\(n1 \(vector-length v1\)\)) s
+44.6 535 M
+(        \(n2 \(vector-length v2\)\)\)) s
+44.6 523 M
+(    \(make-initialized-vector \(+ n1 n2\)) s
+44.6 511 M
+(                             \(lambda \(i\)) s
+44.6 499 M
+(                               \(if \(< i n1\)) s
+44.6 487 M
+(                                   \(vector-ref v1 i\)) s
+44.6 475 M
+(                                   \(vector-ref v2 \(- i n1\)\)\)\)\)\)\)) s
+44.6 451 M
+(\(defhandler generic:binary-append string-append  string? string?\)) s
+44.6 439 M
+(\(defhandler generic:binary-append append         list?   list?\)) s
+44.6 427 M
+(\(defhandler generic:binary-append vector-append  vector? vector?\)) s
+_R
+S
+%%Page: (13) 13
+%%BeginPageSetup
+_S
+18 36 translate
+/pagenum 13 def
+/fname (ps.txt) def
+/fdir (.) def
+/ftail (ps.txt) def
+% User defined strings:
+/fmodstr (Sun Jan 20 15:55:30 2013) def
+/pagenumstr (13) def
+/user_header_p false def
+/user_footer_p false def
+%%EndPageSetup
+do_header
+44.6 679 M
+(;;;;           Most General Generic-Operator Dispatch) s
+44.6 655 M
+(\(declare \(usual-integrations\)\)) s
+44.6 631 M
+(;;; Generic-operator dispatch is implemented here by a discrimination) s
+44.6 619 M
+(;;; list, where the arguments passed to the operator are examined by) s
+44.6 607 M
+(;;; predicates that are supplied at the point of attachment of a) s
+44.6 595 M
+(;;; handler \(by DEFHANDLER\).) s
+44.6 571 M
+(;;; To be the correct branch all arguments must be accepted by) s
+44.6 559 M
+(;;; the branch predicates, so this makes it necessary to) s
+44.6 547 M
+(;;; backtrack to find another branch where the first argument) s
+44.6 535 M
+(;;; is accepted if the second argument is rejected.  Here) s
+44.6 523 M
+(;;; backtracking is implemented by OR.) s
+44.6 499 M
+(\(define \(make-generic-operator arity #!optional name default-operation\)) s
+44.6 487 M
+(  \(let \(\(record \(make-operator-record arity\)\)\)) s
+44.6 475 M
+(    \(define \(operator . arguments\)) s
+44.6 463 M
+(      \(if \(not \(= \(length arguments\) arity\)\)) s
+44.6 451 M
+(          \(error "Wrong number of arguments for generic operator") s
+44.6 439 M
+(                 \(if \(default-object? name\) operator name\)) s
+44.6 427 M
+(                 arity arguments\)\)) s
+44.6 415 M
+(      \(apply \(or \(let per-arg) s
+44.6 403 M
+(                     \(\(tree \(operator-record-tree record\)\)) s
+44.6 391 M
+(                      \(args arguments\)\)) s
+44.6 379 M
+(                   \(let per-pred \(\(tree tree\)\)) s
+44.6 367 M
+(                     \(and \(pair? tree\)) s
+44.6 355 M
+(                          \(if \(\(caar tree\) \(car args\)\)) s
+44.6 343 M
+(                              \(if \(pair? \(cdr args\)\)) s
+44.6 331 M
+(                                  \(or \(per-arg \(cdar tree\) \(cdr args\)\)) s
+44.6 319 M
+(                                      \(per-pred \(cdr tree\)\)\)) s
+44.6 307 M
+(                                  \(cdar tree\)\)) s
+44.6 295 M
+(                              \(per-pred \(cdr tree\)\)\)\)\)\)) s
+44.6 283 M
+(                 \(if \(default-object? default-operation\)) s
+44.6 271 M
+(                     \(lambda args) s
+44.6 259 M
+(                       \(error "No applicable methods for generic operator") s
+44.6 247 M
+(                              \(if \(default-object? name\) operator name\)) s
+44.6 235 M
+(                              args\)\)) s
+44.6 223 M
+(                     default-operation\)\)) s
+44.6 211 M
+(             arguments\)\)) s
+44.6 187 M
+(    \(hash-table/put! *generic-operator-table* operator record\)) s
+44.6 175 M
+(    operator\)\)) s
+44.6 151 M
+(\(define *generic-operator-table*) s
+44.6 139 M
+(  \(make-eq-hash-table\)\)) s
+44.6 115 M
+(\(define \(get-operator-record operator\)) s
+44.6 103 M
+(  \(hash-table/get *generic-operator-table* operator #f\)\)) s
+_R
+S
+%%Page: (14) 14
+%%BeginPageSetup
+_S
+18 36 translate
+/pagenum 14 def
+/fname (ps.txt) def
+/fdir (.) def
+/ftail (ps.txt) def
+% User defined strings:
+/fmodstr (Sun Jan 20 15:55:30 2013) def
+/pagenumstr (14) def
+/user_header_p false def
+/user_footer_p false def
+%%EndPageSetup
+do_header
+44.6 679 M
+(\(define \(make-operator-record arity\) \(cons arity '\(\)\)\)) s
+44.6 667 M
+(\(define \(operator-record-arity record\) \(car record\)\)) s
+44.6 655 M
+(\(define \(operator-record-tree record\) \(cdr record\)\)) s
+44.6 643 M
+(\(define \(set-operator-record-tree! record tree\) \(set-cdr! record tree\)\)) s
+44.6 619 M
+(\(define \(defhandler operator handler . argument-predicates\)) s
+44.6 607 M
+(  \(let \(\(record) s
+44.6 595 M
+(         \(let \(\(record \(hash-table/get *generic-operator-table* operator #f\)\)) s
+44.6 583 M
+(               \(arity \(length argument-predicates\)\)\)) s
+44.6 571 M
+(           \(if record) s
+44.6 559 M
+(               \(begin) s
+44.6 547 M
+(                 \(if \(not \(= arity \(operator-record-arity record\)\)\)) s
+44.6 535 M
+(                     \(error "Incorrect operator arity:" operator\)\)) s
+44.6 523 M
+(                 record\)) s
+44.6 511 M
+(               \(error "Operator not known" operator\)\)\)\)\)) s
+44.6 499 M
+(    \(set-operator-record-tree! record) s
+44.6 487 M
+(      \(bind-in-tree argument-predicates) s
+44.6 475 M
+(                    handler) s
+44.6 463 M
+(                    \(operator-record-tree record\)\)\)\)) s
+44.6 451 M
+(  operator\)) s
+44.6 427 M
+(;;; An alias used in some older code) s
+44.6 415 M
+(\(define assign-operation defhandler\)) s
+44.6 379 M
+(\(define \(bind-in-tree keys handler tree\)) s
+44.6 367 M
+(  \(let loop \(\(keys keys\) \(tree tree\)\)) s
+44.6 355 M
+(    \(let \(\(p.v \(assq \(car keys\) tree\)\)\)) s
+44.6 343 M
+(      \(if \(pair? \(cdr keys\)\)) s
+44.6 331 M
+(          \(if p.v) s
+44.6 319 M
+(              \(begin) s
+44.6 307 M
+(                \(set-cdr! p.v) s
+44.6 295 M
+(                          \(loop \(cdr keys\) \(cdr p.v\)\)\)) s
+44.6 283 M
+(                tree\)) s
+44.6 271 M
+(              \(cons \(cons \(car keys\)) s
+44.6 259 M
+(                          \(loop \(cdr keys\) '\(\)\)\)) s
+44.6 247 M
+(                    tree\)\)) s
+44.6 235 M
+(          \(if p.v) s
+44.6 223 M
+(              \(begin) s
+44.6 211 M
+(                \(warn "Replacing a handler:" \(cdr p.v\) handler\)) s
+44.6 199 M
+(                \(set-cdr! p.v handler\)) s
+44.6 187 M
+(                tree\)) s
+44.6 175 M
+(              \(cons \(cons \(car keys\) handler\)) s
+44.6 163 M
+(                    tree\)\)\)\)\)\)) s
+_R
+S
+%%Page: (15) 15
+%%BeginPageSetup
+_S
+18 36 translate
+/pagenum 15 def
+/fname (ps.txt) def
+/fdir (.) def
+/ftail (ps.txt) def
+% User defined strings:
+/fmodstr (Sun Jan 20 15:55:30 2013) def
+/pagenumstr (15) def
+/user_header_p false def
+/user_footer_p false def
+%%EndPageSetup
+do_header
+44.6 679 M
+(#|) s
+44.6 667 M
+(;;; Demonstration of handler tree structure.) s
+44.6 655 M
+(;;; Note: symbols were used instead of procedures) s
+44.6 631 M
+(\(define foo \(make-generic-operator 3 'foo\)\)) s
+44.6 619 M
+(;Value: foo) s
+44.6 595 M
+(\(pp \(get-operator-record foo\)\)) s
+44.6 583 M
+(\(3\)) s
+44.6 559 M
+(\(defhandler foo 'abc 'a 'b 'c\)) s
+44.6 535 M
+(\(pp \(get-operator-record foo\)\)) s
+44.6 523 M
+(\(3 \(a \(b \(c . abc\)\)\)\)) s
+44.6 499 M
+(\(defhandler foo 'abd 'a 'b 'd\)) s
+44.6 475 M
+(\(pp \(get-operator-record foo\)\)) s
+44.6 463 M
+(\(3 \(a \(b \(d . abd\) \(c . abc\)\)\)\)) s
+44.6 439 M
+(\(defhandler foo 'aec 'a 'e 'c\)) s
+44.6 415 M
+(\(pp \(get-operator-record foo\)\)) s
+44.6 403 M
+(\(3 \(a \(e \(c . aec\)\)) s
+44.6 391 M
+(      \(b \(d . abd\)) s
+44.6 379 M
+(         \(c . abc\)\)\)\)) s
+44.6 355 M
+(\(defhandler foo 'dbd 'd 'b 'd\)) s
+44.6 331 M
+(\(pp \(get-operator-record foo\)\)) s
+44.6 319 M
+(\(3 \(d \(b \(d . dbd\)\)\)) s
+44.6 307 M
+(   \(a \(e \(c . aec\)\)) s
+44.6 295 M
+(      \(b \(d . abd\)) s
+44.6 283 M
+(         \(c . abc\)\)\)\)) s
+44.6 271 M
+(|#) s
+_R
+S
+%%Trailer
+%%Pages: 15
+%%DocumentNeededResources: font Courier-Bold Courier 
+%%EOF
