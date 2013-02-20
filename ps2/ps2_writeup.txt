@@ -1,0 +1,33 @@
+Owen Derby
+2/20/13
+6.945 PS2 Writeup
+
+2.1
+
+2.2
+
+First, we note that it is actually harmful to allow mixing string types with
+vectors and lists. That is, any generalization should only hold over mixing
+lists and vectors; never strings. This is because it is nigh impossible to
+recover the underlying primitive type of the elements of a string. For the
+remainder of this discussion, I will only consider generalizations across mixing
+of strings, and my implementations will reflect this.
+
+Aside from generalizing sequence:append, it may be useful to have a generalized
+equality procedure, which relaxes the requirement that the sequences have the
+same type. That is, I think it would be useful to recursively compare the
+elements of both sequences, in order, ignoring sequence types, for
+equality. However, this should be an alternative to the regular sequence:equal?
+procedure, so let this equality be named "sequence:equal-ta?" for "sequence type
+agnostic equality".
+
+Further, generalizing sequence:map and sequence:for-each, by relaxing the
+requirement that the sequences have the same type, would be quite powerful. One
+could argue that this would make our implementation more fragile, because we
+can't easily verify that the provided procedure is equipped to handle the
+various types provided. However, I argue this isn't any more fragile than the
+original specification (because we still couldn't verify that provided procedure
+will accept arguments of that singular type...). We've just gotten rid of a
+superfluous restriction. So let us adopt this generalization and only refer to
+the newly generalized sequence:map and sequence:for-each from now on (the
+specifications are updated in place).

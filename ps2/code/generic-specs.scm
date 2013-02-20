@@ -1,6 +1,6 @@
 ;;;;            Generic sequence operations
 
-;;; There are many kinds of data that can be used to represent sequences: 
+;;; There are many kinds of data that can be used to represent sequences:
 ;;;     examples include strings, lists, and vectors.
 
 ;;; There are operations that can be defined for all sequence types.
@@ -38,20 +38,35 @@
 ;;;    Returns #t if the sequences are of the same type and have equal
 ;;;    elements in the same order, otherwise returns #f.
 
+; New spec from problem 2.2!!!
+;;; (sequence:equal-ta? <sequence-1> <sequence-2>)
+;;;    Returns #t if the sequences have equal elements in the same order, where
+;;;    elements are compared after reducing to non-sequence types. In other
+;;;    words, the equality of two sub-sequences (in the same position) is
+;;;    determined recursively, by examining their respective elements and
+;;;    without comparing the types of the two sub-sequences. Returns #f
+;;;    otherwise. Note comparing strings with lists and vectors of integers will
+;;;    always return false, because strings coerce elements to characters.
+;;;    For example:
+;;;        (sequence:equal-ta? #(1 2 3) '(1 2 3))  => #t
+;;;        (sequence:equal-ta? '(1 #(2 3) 4) '(1 "23" 4))  => #f
+;;;        (sequence:equal-ta? '(1 #(#\2 #\3) 4) '(1 "23" 4))  => #t
+;;;        (sequence:equal-ta? '(1 #(2 3) 4) '(1 '(3 2) 4))  => #f
+
 
 ;;;                     Mutation
 ;;;
-;;; Some sequences are immutable, while others can be changed.  
+;;; Some sequences are immutable, while others can be changed.
 ;;;
 ;;; For those that can be modified we can change an element:
 ;;;
-;;; (sequence:set! <sequence> <i> <v>) 
+;;; (sequence:set! <sequence> <i> <v>)
 ;;;    Sets the ith element of the sequence to v.
 
 ;;;                  Cutting and Pasting
 ;;;
 ;;;  (sequence:subsequence <sequence> <start> <end>)
-;;;    The arguments start and end must be exact integers such that 
+;;;    The arguments start and end must be exact integers such that
 ;;;       0 <= start <= end <= (sequence:size <sequence>).
 ;;;    Returns a new sequence of the same type as the given sequence,
 ;;;    of size end-start with elements selected from the given sequence.
@@ -59,30 +74,37 @@
 ;;;    referenced by start.  It ends with the element of the given
 ;;;    sequence referenced by end-1.
 
+; Spec ammended for problem 2.2!!!
 ;;; (sequence:append <sequence-1> ... <sequence-n>)
-;;;    Requires that the sequences are all of the same type.  Returns
-;;;    a new sequence of the type, formed by concatenating the
-;;;    elements of the given sequences.  The size of the new sequence
-;;;    is the sum of the sizes of the given sequences.
+
+;;;    Returns a new sequence of the same type as the first sequence, formed by
+;;;    concatenating the elements of the given sequences. This allows the
+;;;    combination of unlike sequences. The size of the new sequence is the sum
+;;;    of the sizes of the given sequences.
 
 ;;;                      Iterators
 ;;;
 ;;; (sequence:generate <sequence-type> <n> <function>)
 ;;;    Makes a new sequence of the given sequence type, of size n.
-;;;    The ith element of the new sequence is the value of the 
+;;;    The ith element of the new sequence is the value of the
 ;;;    function at the index i.
 
+; Spec ammended foro problem 2.2!!!
 ;;; (sequence:map <function> <seq-1> ... <seq-n>)
-;;;    Requires that the sequences given are of the same size and
-;;;    type, and that the arity of the function is n.  The ith element
-;;;    of the new sequence is the value of the function applied to the
-;;;    n ith elements of the given sequences.
+;;;    Requires that the sequences given are of the same size, and that the
+;;;    arity of the function is n. Returns a new sequence of the same type as
+;;;    the first given sequence, where the ith element of the new sequence is
+;;;    the value of the function applied to the n ith elements of the given
+;;;    sequences(the input order of the n elements is the same as the input
+;;;    order of their constituent sequences).
 
+; Spec ammended foro problem 2.2!!!
 ;;; (sequence:for-each <procedure> <seq-1> ... <seq-n>)
-;;;    Requires that the sequences given are of the same size and
-;;;    type, and that the arity of the procedure is n.  Applies the
-;;;    procedure to the n ith elements of the given sequences;
-;;;    discards the value.  This is done for effect.
+;;;    Requires that the sequences given are of the same size, and that the
+;;;    arity of the procedure is n.  Applies the procedure to the n ith elements
+;;;    of the given sequences (the input order of the n elements is the same as
+;;;    the input order of their constituent sequences); discards the value.
+;;;    This is done for effect.
 
 ;;;                 Filtration and Search
 ;;;
@@ -105,7 +127,7 @@
 ;;; (sequence:fold-right <function> <initial> <sequence>)
 ;;;    Returns the result of applying the given binary function,
 ;;;    from the right, starting with the initial value.
-;;;    For example, 
+;;;    For example,
 ;;;      (sequence:fold-right list 'end '(a b c))
 ;;;           => (a (b (c end)))
 
@@ -113,9 +135,6 @@
 ;;; (sequence:fold-left <function> <initial> <sequence>)
 ;;;    Returns the result of applying the given binary function,
 ;;;    starting with the initial value, from the left.
-;;;    For example, 
+;;;    For example,
 ;;;      (sequence:fold-left list 'start '(a b c))
 ;;;           => (((start a) b) c)
-
-
-

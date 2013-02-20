@@ -1,1 +1,1 @@
-wget -nd -r --no-parent 
+wget -nd -r --no-parent $1
