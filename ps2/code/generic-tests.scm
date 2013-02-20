@@ -171,3 +171,14 @@
 			   v)
 			 #(9 4 1))
 	"general for-each failed")
+
+; problem 2.3
+
+
+; problem 2.5.C
+
+; since '() is a list?, nothing is null....
+(assert (generic:less? #f #t) "generic:less bool failed")
+(assert (not (generic:less? #t #f)) "generic:less bool failed")
+(assert (not (generic:less? '(1 2 3) #t)) "generic:less_null2 failed")
+(assert (generic:less? #t '(1 2 3)) "generic:less_null2 failed")

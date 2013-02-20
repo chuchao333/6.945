@@ -29,9 +29,9 @@
   (if (null? sequences)
       (error "Need at least one sequence for append"))
   (let ((type? (sequence:type (car sequences))))
-;    (if (not (for-all? (cdr sequences) type?))
-;	(error "All sequences for append must be of the same type"
-;	       sequences))
+    (if (not (for-all? (cdr sequences) type?))
+	(error "All sequences for append must be of the same type"
+	       sequences))
     (fold-right generic:binary-append
 		(sequence:null (sequence:type (car sequences)))
 		sequences)))
@@ -42,7 +42,7 @@
 ;;; Implementations of the generic operators.
 
 (define (any? x) #t)
-(define (constant val) (lambda (x) val))
+(define (constant val) (lambda x val))
 (define (is-exactly val) (lambda (x) (eq? x val)))
 
 (defhandler sequence:null (constant "")    (is-exactly string?))
@@ -256,6 +256,15 @@
 ;(define (vector->string v) (list2string (vector->list v)))
 ;(define (string->vector s) (list->vector (string->list s)))
 
+(define (sequence:append . sequences)
+  (if (null? sequences)
+      (error "Need at least one sequence for append"))
+  (let ((type? (sequence:type (car sequences))))
+    (fold-right generic:binary-append
+		(sequence:null (sequence:type (car sequences)))
+		sequences)))
+
+
 (defhandler generic:binary-append (compose-2nd-arg vector-append list->vector)
   vector? list?)
 (defhandler generic:binary-append (compose-2nd-arg append vector->list)
@@ -288,3 +297,58 @@
     (do ((i 0 (+ i 1)))
 	((= i n))
       (apply func (pull sequences i)))))
+
+
+; problem 2.5.C implementation
+
+(define (list<? list-1 list-2)
+  (let ((len-1 (length list-1)) (len-2 (length list-2)))
+    (cond ((< len-1 len-2) #t)
+          ((> len-1 len-2) #f)
+          ;; Invariant:  equal lengths
+          (else
+           (let prefix<? ((list-1 list-1) (list-2 list-2))
+             (cond ((null? list-1) #f)  ; same
+                   ((generic:less? (car list-1) (car list-2)) #t)
+                   ((generic:less? (car list-2) (car list-1)) #f)
+                   (else (prefix<? (cdr list-1) (cdr list-2)))))))))
+
+(define generic:less? (make-generic-operator 2 "generic:less?"))
+
+(define (boolean<? a b) (and (not a) b))
+
+;(defhandler sequence:null? null? (any-but string? vector? list?))
+
+(define (any-of . vals) (lambda (x) (any (lambda (type?) (eq? type? x)) vals)))
+
+(defhandler generic:less? (constant #f) null? null?)
+(defhandler generic:less? boolean<? boolean? boolean?)
+(defhandler generic:less? (constant #f) boolean? null?)
+(defhandler generic:less? (constant #t) null? boolean?)
+(defhandler generic:less? char<? char? char?)
+(defhandler generic:less? (constant #f) char? (any-of null? boolean?)
+(defhandler generic:less? (constant #t) (any-of null? boolean?) char?)
+(defhandler generic:less? < number? number?)
+(defhandler generic:less? (constant #f) number? (any-of null? boolean? char?))
+(defhandler generic:less? (constant #t) (any-of null? boolean? char?) number?)
+(defhandler generic:less? symbol<? symbol? symbol?)
+(defhandler generic:less? (constant #f) symbol?
+  (any-of null? boolean? char? number?))
+(defhandler generic:less? (constant #t)
+  (any-of null? boolean? char? number?) symbol?)
+(defhandler generic:less? string<? string? string?)
+(defhandler generic:less? (constant #f) string?
+  (any-of null? boolean? char? number? symbol?))
+(defhandler generic:less? (constant #t)
+  (any-of null? boolean? char? number? symbol?) string?)
+(defhandler generic:less? (lambda (v1 v2) (list<? (vector->list v1) (vector->list v2)))
+  vector? vector?)
+(defhandler generic:less? (constant #f) vector?
+  (any-of null? boolean? char? number? symbol? string?))
+(defhandler generic:less? (constant #t)
+  (any-of null? boolean? char? number? symbol? string?) vector?)
+(defhandler generic:less? list<? list? list?)
+(defhandler generic:less? (constant #f) list?
+  (any-of null? boolean? char? number? symbol? string? vector?))
+(defhandler generic:less? (constant #t)
+  (any-of null? boolean? char? number? symbol? string? vector?) list?)

@@ -16,7 +16,8 @@
 (define (make-generic-operator arity #!optional name default-operation)
   (let ((record (make-operator-record arity)))
     (define (operator . arguments)
-      (if (not (= (length arguments) arity))
+      (if (not (or (= (length arguments) arity)
+		   (= (length arguments (+ arity 1)))))
           (error "Wrong number of arguments for generic operator"
 		 (if (default-object? name) operator name)
 		 arity arguments))
@@ -65,7 +66,9 @@
                (error "Operator not known" operator)))))
     (set-operator-record-tree! record
       (bind-in-tree argument-predicates
-		    handler
+		    (lambda args (if (= (length args) (+ (length argument-predicates) 1))
+				     ((car args) (apply handler (cdr args)))
+				     (apply handler args)))
 		    (operator-record-tree record))))
   operator)
 

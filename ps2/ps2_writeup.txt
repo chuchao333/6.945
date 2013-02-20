@@ -2,6 +2,8 @@ Owen Derby
 2/20/13
 6.945 PS2 Writeup
 
+latest code can be retrieved from https://github.com/oderby/6.945
+
 2.1
 
 2.2
@@ -31,3 +33,92 @@ will accept arguments of that singular type...). We've just gotten rid of a
 superfluous restriction. So let us adopt this generalization and only refer to
 the newly generalized sequence:map and sequence:for-each from now on (the
 specifications are updated in place).
+
+2.3
+
+This is not a good idea. This syntactic scheme makes it much more difficult to
+create generic dispatch operators of unspecified arity. It's also a bit
+clunky. Finally, it breaks all the previously defined helper functions like
+sequence:append which don't immediately delegate arguments to the generic
+dispatch. That is, it pushes a lot of underlying implementation details on the
+user of the generic dispatch, where we should be striving to keep as much of
+that within the dispatch system as possible. All this to push a bit more
+flexibility into the generic dispatch system? I don't think it's worth the
+sacrifices to clarity and simplicity.
+
+To implement this, we need to primarily change defhandler to support receiving
+an optional argument of a predicate. We can do this by simply defining a wrapper
+around the provided handler, which will (optionally) take the additional argument and coerce the
+output from the handler (otherwise just apply the handler as normal). However,
+this implies a knowledge of how to map from predicate to coercion method. We
+would either need to build this functionality into ghelper.scm or provide it as
+an input to make-generic-operator. Additionally, make-generic-operator would
+need to allow functions with arity+1.
+
+Unfortunately, I have no code to show for this, as I could not quite get an
+implementation of the above working...
+
+2.4
+
+Unlike the change proposed in 2.3, this is a reasonable idea. Not having built
+in support for functions of unspecified arity makes it a hassle for the user to
+define such functions as wrappers around fold operations with explicit
+type-ing. Whereas 2.3 expose some of the underlying implementation details to
+the user, making the interface to the generic dispatch system more complicated,
+this makes the interface simpler, allowing users to worry about return types in
+the type-specific procedures. Finally, note that this and 2.3 are almost
+completely incompatible changes - supporting both unspecified arity and an
+optional first argument introduces ambiguities when using predicate-base
+dispatch.
+
+To implement this, we'd need to either create an alternative
+make-generic-operator for creating generic functions with unspecified arity (or
+just make the arity argument optional in the existing function) or just do away
+with the arity restrictions and treat all generic operators as having
+unspecified arity. I prefer the latter method, as it's more DRY and elegant, and
+we can always infer arity from the number of predicates provided to defhandler
+(if it's a finite number). We'd need to also modify how we specify predicate
+matches in defhandler - to support predicate restrictions for unspecified arity
+functions, we'd either need to require they all be the same type or accept some
+sort of meta-predicate, which defines the predicate pattern for an infinite set
+of predicates. With this, we'd also need to modify our backtracking dispatch
+algorithm to obey such syntax.
+
+2.5
+
+A. Louis' implementation simply returns true if any of the elements in the first
+   list is less than the conjugate element in the second list. With this,
+   sorting would be unpredictable. For example both
+   ; (list<? '(1 2) '(2 1)) => #t
+   ; (list<? '(2 1) '(1 2)) => #t
+   return true, which is inconsistent.
+
+B. Alyss'a suggestions isn't wrong, but it's not as flexible as using the
+   dispatch table. It's basically hardcoding the dispatch table, making it that
+   much harder to augment our sequence library with new sequence types.
+
+C. See code. I couldn't figure out how to fix the problem that '() is both null?
+and a list?
+
+2.6
+
+Dispatching via predicates requires a time which grows with the size of the
+dispatch table/tree. The fundamental problem arises from the need to possibly
+check multiple predicate branches before possibly finding a match. With data
+tags, rather than passing the arguments of a function past all operator handlers
+for every call, we can directly dispatch the appropriate handler given the
+operators without need to search by indexing on the types of the args. This
+requires linear time.
+
+However, the predicate-based dispatch allows us to construct a much more
+flexible system. It is much more natural to express generic-dispatch rules using
+predicates (natural = intuitive here). Further, we have the possibility to
+specify generic procedures of undefined arity much more easily than we could
+with type tags.
+
+You can only build a generic dispatch system with zero runtime overhead if you
+have a fully typed language with static compilation, where the compiler can
+substitute the proper procedure for each generic procedure when the program is
+compiled. Otherwise, you need to lookup which function to dispatch to at
+runtime. Further, you lose the ability to dynamically add/create new dispatch
+operators at run time with this system.
