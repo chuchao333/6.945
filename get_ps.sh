@@ -1,1 +1,2 @@
-wget -nd -r --no-parent $1
+#!/bin/bash
+wget -nd -r --no-parent --reject *html* $1
