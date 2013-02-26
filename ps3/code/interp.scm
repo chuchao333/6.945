@@ -93,16 +93,22 @@
 (defhandler apply
   (lambda (procedure operands calling-environment)
     (define (evaluate-list operands)
-      (cond ((null? operands) '())
-	    ((null? (rest-operands operands))
-	     (list (eval (first-operand operands)
-			 calling-environment)))
-	    (else
-	     (cons (eval (first-operand operands)
-			 calling-environment)
-		   (evaluate-list (rest-operands operands))))))
-    (apply-primitive-procedure procedure
-      (evaluate-list operands)))
+      (if (null? operands)
+	  '()
+	  (let ((first_ops (eval (first-operand operands) calling-environment))
+		(rest_ops (rest-operands operands)))
+	    (if (null? rest_ops)
+		(list first_ops)
+		(cons first_ops
+		      (evaluate-list rest_ops))))))
+    (let ((evaluated-operands (evaluate-list operands)))
+      (if (and (not (no-operands? evaluated-operands))
+	       (compound-procedure? (first-operand evaluated-operands)))
+	  (let ((p (first-operand evaluated-operands)))
+	    (apply-primitive-procedure procedure
+				       (lambda y (apply p y calling-environment))
+				       (rest-operands evaluated-operands)))
+	  (apply-primitive-procedure procedure evaluated-operands))))
   strict-primitive-procedure?)
 
 (defhandler apply
@@ -124,6 +130,15 @@
 	     arguments
 	     (procedure-environment procedure)))))
   compound-procedure?)
+
+(defhandler apply
+  (lambda (procedure operands calling-environment)
+    (if (= (vector-length procedure) 0) (vector)
+	(let ((first_proc (vector-ref procedure 0))
+	      (rest_proc (vector-tail procedure 1)))
+	      (vector-append (vector (apply first_proc operands calling-environment))
+		    (apply rest_proc operands calling-environment)))))
+  vector?)
 
 (define evaluate-procedure-operand
   (make-generic-operator 3
