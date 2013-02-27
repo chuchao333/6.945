@@ -2,6 +2,8 @@ Owen Derby
 2/27/13
 6.945 PS3 Writeup
 
+Collaborated with Stephen Chang
+
 Problem 3.2
 
 We have a scoping issue here. The underlying procedure (map in this case) can't
@@ -40,3 +42,71 @@ I argue that this is both a valid and elegant approach, as it doesn't change any
 other behavior, doesn't require extending or bloating the generic dispatch
 mechanism and operates for any primitive procedure, including map. Indeed, see
 demonstration that it works.
+
+Problem 3.4
+
+3.4.a
+
+Alone, KONS is almost sufficient for fully implementing correct
+streams. However, because KONS is lazy in both its first and second arguments,
+it messes up in constructing streams with side-effects. In order to properly
+handle side-effects, we need a secondary KONS, KONS2, which is strict in its
+first argument (the car) and lazy in the second.
+
+3.4.b
+
+The error arises because in determining the value to bind 'y to, 'dy is
+attempted to be evaluated, when it has yet to be defined. Instead, we need to
+specify that 'dy should be lazy evaluated, because there is no need for dy to
+exist for the stream y to be well-defined. See below for the fixed-up integral
+definition.
+
+   (define (integral (integrand lazy) initial-value dt)
+     (define int
+       (kons initial-value
+	     (add-streams (scale-stream integrand dt)
+			  int)))
+     int)
+
+With this fix, we now compute a value of 2.716923932235896
+
+Problem 3.5
+
+3.5.a
+
+Memoization trades off computation time with space. That is, memoization saves
+computing time, but requires more space for caching the computed values than
+non-memoized code. This could be undesirable if you have a fairly cheap
+computation which you call with many different values. For example, you likely
+would not want to memoize primitive procedures such as + or *. You also can't
+memoize if you have a non-functional procedure, where different outputs are
+produced for the same input.
+
+3.5.b
+
+This would not have worked for similar reasons to why we had problems in 3.2 -
+because lazy evaluation is implemented in our interpreter, the underlying cons
+primitive and the environment it is evaluated in would not know how to handle
+the delayed arguments. Indeed, we need to treat kons as a special form in our
+interpreter to get this right.
+
+3.5.c
+
+kons does not play well with assignments. That is, one of the major drawbacks of
+changing cons to kons is that you change the language from applicative order to
+normal order. And then from normal order, it is much harder to simulate
+applicative order, making it a lot harder to do some useful operations you can
+otherwise do with cons. Applicative order also plays much more nicely with
+assignments and our intuitive notion of time, such that side-effects from
+assignments occur as we expect. With normal order, this is not the case.
+
+Problem 3.6
+
+The power of generic eval/apply is that it becomes very easy to add your own
+special forms or support for entirely new input datatypes. I'm afraid that I
+don't have much imaginative/inventive power at 5 am, so all you get is a simple
+string substitution trick - any string evaluated (so all strings) will be
+scanned for the "$" pattern, and the ensuing word will be interpreted as a
+symbol and looked up in the environment. This would be near impossible to do
+without generic EVAL. This is basically how strings are interpretted in
+BASH. construct.scm implements and demonstrates this idea.
