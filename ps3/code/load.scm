@@ -10,6 +10,8 @@
 (define generic-evaluation-environment
   (extend-top-level-environment user-initial-environment))
 
+(define ALLOW-SELF-EVALUATING-SYMBOLS false)
+
 (load "interp" generic-evaluation-environment)
 (load "repl" generic-evaluation-environment)
 

@@ -1,4 +1,4 @@
-;;; -*- Mode:Scheme -*- 
+;;; -*- Mode:Scheme -*-
 
 (declare (usual-integrations))
 
@@ -14,7 +14,7 @@
 
 (define strict-primitive-procedure? procedure?)
 (define apply-primitive-procedure apply)
-
+(define scheme-environment-parent environment-parent)
 
 ;;; Compound procedures
 #|
@@ -77,7 +77,13 @@ http://groups.csail.mit.edu/mac/projects/scheme/documentation/scheme_11.html#SEC
 ;;; Extension to make underlying Scheme values available to interpreter
 
 (define (lookup-scheme-value var)
-  (lexical-reference generic-evaluation-environment var))
+  (if (and (not (environment-bound? generic-evaluation-environment var))
+	   ALLOW-SELF-EVALUATING-SYMBOLS)
+      ; mask unbound variable errors, just assume we want a reference to the
+      ; symbol
+      var
+      (lexical-reference generic-evaluation-environment var))
+  )
 
 (define (define-variable! var val env)
   (if (eq? env the-empty-environment)
@@ -103,5 +109,3 @@ http://groups.csail.mit.edu/mac/projects/scheme/documentation/scheme_11.html#SEC
 	  (cond ((null? vars) (plp (vector-ref env 2)))
 		((eq? var (car vars)) (set-car! vals val))
 		(else (scan (cdr vars) (cdr vals))))))))
-
-

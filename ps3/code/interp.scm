@@ -90,25 +90,62 @@
 (define apply
   (make-generic-operator 3 'apply default-apply))
 
+
+(define (symbolic? expression)
+  (if (pair? expression)
+      (or (symbolic? (car expression)) (symbolic? (cdr expression)))
+      (and (not (null? expression)) (symbol? expression))))
+
+(define (procedure-to-symbol proc env)
+  (let plp ((env env))
+    (if (eq? env the-empty-environment)
+	(procedure-to-symbol-scheme proc generic-evaluation-environment)
+	(let scan
+	    ((vars (environment-variables env))
+	     (vals (environment-values env)))
+	  (cond ((null? vars) (plp (environment-parent env)))
+		((eq? proc (car vals)) (car vars))
+		(else (scan (cdr vars) (cdr vals))))))))
+
+(define (procedure-to-symbol-scheme proc env)
+  (let plp ((env env))
+    (let scan
+	((bindings (environment-bindings env)))
+      (cond ((null? bindings)
+	     (if (environment-has-parent? env)
+		 (plp (scheme-environment-parent env))
+		 proc))
+	    ((and (= (length (car bindings)) 2) (eq? proc (cadar bindings)))
+	     (caar bindings))
+	    (else (scan (cdr bindings)))))))
+
+(define (evaluate-list operands env)
+  (if (null? operands)
+      '()
+      (let ((first_ops (eval (first-operand operands) env))
+	    (rest_ops (rest-operands operands)))
+	(if (null? rest_ops)
+	    (list first_ops)
+	    (cons first_ops
+		  (evaluate-list rest_ops env))))))
+
 (defhandler apply
   (lambda (procedure operands calling-environment)
-    (define (evaluate-list operands)
-      (if (null? operands)
-	  '()
-	  (let ((first_ops (eval (first-operand operands) calling-environment))
-		(rest_ops (rest-operands operands)))
-	    (if (null? rest_ops)
-		(list first_ops)
-		(cons first_ops
-		      (evaluate-list rest_ops))))))
-    (let ((evaluated-operands (evaluate-list operands)))
-      (if (and (not (no-operands? evaluated-operands))
-	       (compound-procedure? (first-operand evaluated-operands)))
-	  (let ((p (first-operand evaluated-operands)))
-	    (apply-primitive-procedure procedure
-				       (lambda y (apply p y calling-environment))
-				       (rest-operands evaluated-operands)))
-	  (apply-primitive-procedure procedure evaluated-operands))))
+    (let ((evaluated-operands (evaluate-list operands calling-environment))
+	  (has-operands (not (no-operands? operands))))
+      ;(bkpt 'ha 'ha)
+      (cond ((and has-operands
+		  (compound-procedure? (first-operand evaluated-operands)))
+	     (let ((p (first-operand evaluated-operands)))
+	       (apply-primitive-procedure procedure
+					  (lambda y
+					    (apply p y calling-environment))
+					  (rest-operands evaluated-operands))))
+	    ((and has-operands (any symbolic? evaluated-operands)
+		  (true? ALLOW-SELF-EVALUATING-SYMBOLS))
+	     (cons (procedure-to-symbol procedure calling-environment)
+		   evaluated-operands))
+	    (else (apply-primitive-procedure procedure evaluated-operands)))))
   strict-primitive-procedure?)
 
 (defhandler apply
@@ -139,6 +176,11 @@
 	      (vector-append (vector (apply first_proc operands calling-environment))
 		    (apply rest_proc operands calling-environment)))))
   vector?)
+
+(defhandler apply
+  (lambda (procedure operands calling-environment)
+    (cons procedure (evaluate-list operands calling-environment)))
+  variable?)
 
 (define evaluate-procedure-operand
   (make-generic-operator 3

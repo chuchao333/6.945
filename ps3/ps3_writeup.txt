@@ -1,0 +1,42 @@
+Owen Derby
+2/27/13
+6.945 PS3 Writeup
+
+Problem 3.2
+
+We have a scoping issue here. The underlying procedure (map in this case) can't
+properly apply the procedure as it's wrapped and created by our interpreter in
+our own data structure (the structure for compound procedures, to be
+precise). Thus, in order to fix this, we simply need to provide a new procedure
+(un-interpreted) which map can use to properly apply the interpreted
+procedure. We can do this by wrapping the interpreted procedure in an
+un-interpreted lambda function of the list of args y, which calls the
+interpreter's apply on the interpreted procedure and y, passing in the
+appropriate interpreter environment. See the code for such an implementation.
+
+
+Problem 3.3
+
+I was initially very confused by the suggestion to "make a generic extension to
+EVAL." Fundamentally, it is impossible to just add a new defhandler for this
+case with the given implementation of generic dispatch, because we cannot write
+a predicate check to identify such "unbound and self-evaluating" symbols. To do
+so, we would need to write some predicate check akin to "unbound?", which would
+check that the predicate corresponds to an unbound symbol. However, such a check
+implies access to the current environment, which is not available at the
+predicate-checking stage of dispatch. And so, we cannot distinguish, when
+checking predicate types, between unbound symbols and variables (bound
+symbols).
+
+Hence, for my implementation I modified the point at which we can distinguish
+between variables and unbound symbols - when looking up symbols in the
+underlying environment with the function "lookup-scheme-value". From there, I
+modified the apply handler for all primitive procedures to not apply the
+primitive procedure at all if there are any symbols remaining in the args after
+evaluation and just return the cons of the procedure with the evaluated
+args.
+
+I argue that this is both a valid and elegant approach, as it doesn't change any
+other behavior, doesn't require extending or bloating the generic dispatch
+mechanism and operates for any primitive procedure, including map. Indeed, see
+demonstration that it works.
