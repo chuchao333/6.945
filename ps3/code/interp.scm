@@ -91,11 +91,13 @@
   (make-generic-operator 3 'apply default-apply))
 
 
+; recursively check for symbols in expression
 (define (symbolic? expression)
   (if (pair? expression)
       (or (symbolic? (car expression)) (symbolic? (cdr expression)))
       (and (not (null? expression)) (symbol? expression))))
 
+; lookup symbol the given procedure is bound to
 (define (procedure-to-symbol proc env)
   (let plp ((env env))
     (if (eq? env the-empty-environment)
@@ -107,6 +109,7 @@
 		((eq? proc (car vals)) (car vars))
 		(else (scan (cdr vars) (cdr vals))))))))
 
+; lookup symbol the given procedure is bound to, in the underlying scheme env
 (define (procedure-to-symbol-scheme proc env)
   (let plp ((env env))
     (let scan
@@ -133,18 +136,20 @@
   (lambda (procedure operands calling-environment)
     (let ((evaluated-operands (evaluate-list operands calling-environment))
 	  (has-operands (not (no-operands? operands))))
-      ;(bkpt 'ha 'ha)
       (cond ((and has-operands
 		  (compound-procedure? (first-operand evaluated-operands)))
+	     ; Problem 3.2 extension
 	     (let ((p (first-operand evaluated-operands)))
 	       (apply-primitive-procedure procedure
 					  (lambda y
 					    (apply p y calling-environment))
 					  (rest-operands evaluated-operands))))
+	    ; problem 3.3.a extension
 	    ((and has-operands (any symbolic? evaluated-operands)
 		  (true? ALLOW-SELF-EVALUATING-SYMBOLS))
 	     (cons (procedure-to-symbol procedure calling-environment)
 		   evaluated-operands))
+	    ; default behavior
 	    (else (apply-primitive-procedure procedure evaluated-operands)))))
   strict-primitive-procedure?)
 
@@ -168,6 +173,7 @@
 	     (procedure-environment procedure)))))
   compound-procedure?)
 
+; Problem 3.1 extension
 (defhandler apply
   (lambda (procedure operands calling-environment)
     (if (= (vector-length procedure) 0) (vector)
@@ -177,6 +183,7 @@
 		    (apply rest_proc operands calling-environment)))))
   vector?)
 
+; Problem 3.3.b extension to apply - hand (f 3) properly
 (defhandler apply
   (lambda (procedure operands calling-environment)
     (cons procedure (evaluate-list operands calling-environment)))
