@@ -66,6 +66,7 @@
   apply-primitive-procedure
   strict-primitive-procedure?)
 
+; Problem 3.1: make extending the environment a generic operation
 (define cust-ext-env
   (make-generic-operator 3 'custom-extend-environment
 			 (lambda (proc args env)
@@ -74,6 +75,7 @@
 (define (ext-env-inf proc args env)
   (extend-environment (list proc) (list args) env))
 
+; Problem 3.1: handle symbols differently
 (defhandler cust-ext-env ext-env-inf symbol?)
 
 (defhandler execute-application
