@@ -41,7 +41,6 @@
 
 (defhandler analyze analyze-if if?)
 
-
 (define (analyze-lambda exp)
   (let ((vars (lambda-parameters exp))
         (bproc (analyze (lambda-body exp))))
@@ -67,13 +66,20 @@
   apply-primitive-procedure
   strict-primitive-procedure?)
 
+(define cust-ext-env
+  (make-generic-operator 3 'custom-extend-environment
+			 (lambda (proc args env)
+			   (extend-environment proc args env))))
+
+(define (ext-env-inf proc args env)
+  (extend-environment (list proc) (list args) env))
+
+(defhandler cust-ext-env ext-env-inf symbol?)
+
 (defhandler execute-application
   (lambda (proc args)
     ((procedure-body proc)
-     (extend-environment 
-      (procedure-parameters proc)
-      args
-      (procedure-environment proc))))
+     (cust-ext-env (procedure-parameters proc) args (procedure-environment proc))))
   compound-procedure?)
 
 (define (analyze-sequence exps)
