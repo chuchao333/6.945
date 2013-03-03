@@ -9,6 +9,6 @@
 
 (load "analyze-amb" generic-evaluation-environment)
 (load "repl-amb" generic-evaluation-environment)
-
+(load "multiple-dwelling" generic-evaluation-environment)
 
 (ge generic-evaluation-environment)

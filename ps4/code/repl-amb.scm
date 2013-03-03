@@ -30,11 +30,14 @@
   (compose pp procedure-printable-representation)
   compound-procedure?)
 
- 
+
 (define (read) (prompt-for-command-expression "eval> "))
 
 (define the-global-environment)
 
+(define (setup)
+  (set! the-global-environment
+	(extend-environment '() '() the-empty-environment)))
 
 ;;; Initialization and driver loop
 
@@ -49,8 +52,7 @@
 (define output-prompt "\n;;; Amb-Eval value:\n")
 
 (define (init)
-  (set! the-global-environment
-	(extend-environment '() '() the-empty-environment))
+  (setup)
   (driver-loop))
 
 (define (driver-loop)
