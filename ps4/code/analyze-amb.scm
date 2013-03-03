@@ -1,5 +1,5 @@
 ;;;; Analyzing interpreter with AMB.
-;;;   Execution procedures take environment 
+;;;   Execution procedures take environment
 ;;;   and two continuations: SUCCEED and FAIL
 
 (define (ambeval exp env succeed fail)
@@ -55,7 +55,22 @@
 	     fail))))
 
 (defhandler analyze analyze-if if?)
-
+
+(define (analyze-if-fail exp)
+  (let ((fproc (analyze (if-fail-first exp)))
+	(aproc (analyze (if-fail-alternative exp))))
+    (lambda (env succeed fail)
+      (fproc env
+	     (lambda (val fail2)
+	       (succeed val fail2))
+	     (lambda ()
+	       (aproc env (lambda (val fail3)
+			    (succeed val fail3))
+		      fail))))))
+
+
+(defhandler analyze analyze-if-fail if-fail?)
+
 (define (analyze-sequence exps)
   (define (sequentially proc1 proc2)
     (lambda (env succeed fail)
@@ -150,7 +165,21 @@
 (defhandler analyze
   analyze-undoable-assignment
   assignment?)
-
+
+(define (analyze-permanent-assignment exp)
+  (let ((var (assignment-variable exp))
+        (vproc (analyze (assignment-value exp))))
+    (lambda (env succeed fail)
+      (vproc env
+	     (lambda (new-val val-fail)
+	       (set-variable-value! var new-val env)
+	       (succeed 'OK val-fail))
+      fail))))
+
+(defhandler analyze
+  analyze-permanent-assignment
+  permanent-assignment?)
+
 (define (analyze-definition exp)
   (let ((var (definition-variable exp))
         (vproc (analyze (definition-value exp))))
@@ -173,7 +202,7 @@
 	(if (null? alts)
 	    (fail)
 	    ((car alts) env
-	                succeed
+                        succeed
 			(lambda ()
 			  (loop (cdr alts)))))))))
 

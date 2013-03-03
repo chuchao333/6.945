@@ -43,4 +43,30 @@
 (infix "a*b")
 ; 6
 (infix "a*a/b^a-a*b/a")
-;-7/8
+; -7/8
+
+;;; Problem 4.3
+;; 4.50
+(define count 0)
+;; show that count always is 0 with undoable set
+(let ((x (amb 'a 'b 'c)) (y (amb 'a 'b 'c))) (set! count (+ count 1)) (require (not (eq? x y))) (list x y count))
+; (a b 1)
+try-again
+; (a c 1)
+;; show that count is always incrementing with permanent set
+(let ((x (amb 'a 'b 'c)) (y (amb 'a 'b 'c))) (permanent-set! count (+ count 1)) (require (not (eq? x y))) (list x y count))
+; (a b 2)
+try-again
+; (a c 3)
+
+;; 4.51
+(if-fail (let ((x (amb '1 3 5)))
+	   (require (even? x))
+	   x)
+	 'all-odd)
+; all-odd
+(if-fail (let ((x (amb '1 3 5 8)))
+	   (require (even? x))
+	   x)
+	 'all-odd)
+; 8
