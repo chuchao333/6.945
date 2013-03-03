@@ -1,0 +1,12 @@
+Owen Derby
+6.945 PS4
+
+Code at https://github.com/oderby/6.945/tree/master/ps4/code
+
+Problem 4.3
+
+Note - I could not easily run the multiple-dwelling problem as it was
+provided. You can see the changes I needed to make in order to get it just to
+run in the diffs.
+
+Ex 4.38: There are 5 solutions to the modified puzzle
