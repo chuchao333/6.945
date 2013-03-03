@@ -10,3 +10,20 @@ provided. You can see the changes I needed to make in order to get it just to
 run in the diffs.
 
 Ex 4.38: There are 5 solutions to the modified puzzle
+
+Ex 4.39: Reordering the require statments shouldn't make too much of a
+   difference. A failed require statment will force a backtrack. Since all the
+   require statements appear sequentially afterall variables have been assigned
+   a value, failing an earlier require statement would save us from evaluating
+   the conditionals in the later require statements. So if there is a particular
+   requirement statement which will fail the most times in this evaluation, then
+   we might save some time by putting that first. However, that is already the
+   case, since our requirement that all assignments be unique is the first
+   requirement. After that, we could put the requirements between pairs of
+   variables earlier, but the expected time difference in this case would be
+   negligible, not to mention that the additional computation in those may
+   outweigh the benefit of putting them earlier.
+
+Ex 4.40 There are 5^5=3125 assignments without the requirement that they be
+   distinct. With the distinct requirement, there are 5!=120 assignments. See
+   diff for the new procedure.
