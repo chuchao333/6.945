@@ -1,4 +1,4 @@
-;;; -*- Mode:Scheme -*- 
+;;; -*- Mode:Scheme -*-
 
 (declare (usual-integrations))
 
@@ -188,3 +188,77 @@
 
 (define (amb-alternatives exp) (cdr exp))
 
+;;; Infix notation handling
+
+(define (count-lp exp)
+  (length (string-search-all "(" exp)))
+(define (count-rp exp)
+  (length (string-search-all ")" exp)))
+(define (well-balanced? exp) (= (count-lp exp) (count-rp exp)))
+
+(define (has? op exp)
+  (not (eq? (string-search-forward op exp) false)))
+(define (first-exp op exp)
+  (let ((op_idx (string-search-forward op exp)))
+    (string-head exp op_idx)))
+(define (rest-exp op exp)
+  (let ((op_idx (string-search-forward op exp)))
+    (string-tail exp (+ op_idx 1))))
+
+; in general, if we only look at +/- ops, and assume parens have been
+; simplified, we have expression A-B+/-C which should turn into A+B'+/-C, where
+; B' is (-1*B) and we can recurse
+(define (normalize-neg exp)
+  (let* ((fe (first-exp "-" exp)) (ne (rest-exp "-" exp))
+	 (ridx (string-find-next-char-in-set ne (char-set #\+ #\-)))
+	 (neg (if ridx
+		   (list '* -1 (parse-exp (string-head ne ridx)))
+		   (list '* -1 (parse-exp ne)))))
+    (cond ((and (string-null? fe) (not ridx)) ;no A subexp or C subexp
+	   neg)
+	  ((and (string-null? fe) ridx) ;no A subexp, but yes to C
+	   (list '+ neg (parse-exp (string-tail ne ridx))))
+	  ((and (not (string-null? fe)) (not ridx)) ;A, but no C
+	   (list '+ (parse-exp fe) neg))
+	  ((and (not (string-null? fe)) ridx) ; we have both A and C
+	   (list '+ (parse-exp fe) neg (parse-exp (string-tail ne ridx))))
+	  (else (error "huh??" exp)))))
+
+(define (normalize-div exp)
+  (let* ((fe (first-exp "/" exp)) (ne (rest-exp "/" exp))
+	 (ridx (string-find-next-char-in-set ne (char-set #\/ #\*)))
+	 (div (if ridx
+		   (list '/ 1 (parse-exp (string-head ne ridx)))
+		   (list '/ 1 (parse-exp ne)))))
+    (cond ((string-null? fe) (error "no numerator in divide: " exp))
+	  ((not ridx) (list '* (parse-exp fe) div))
+	  (ridx (list '* (parse-exp fe) div (parse-exp (string-tail ne (+ 1 ridx)))))
+	  (else "impossible!"))))
+
+(define (parse-exp exp)
+  (cond
+   ((has? "-" exp) (normalize-neg exp))
+   ((has? "+" exp) (let ((fe (first-exp "+" exp)))
+		     (if (string-null? fe)
+			 (parse-exp (rest-exp "+" exp))
+			 (list '+ (parse-exp (first-exp "+" exp)) (parse-exp (rest-exp "+" exp))))))
+   ((has? "/" exp) (normalize-div exp))
+   ((has? "*" exp) (list '* (parse-exp (first-exp "*" exp)) (parse-exp (rest-exp "*" exp))))
+   ((has? "^" exp) (list 'expt (parse-exp (first-exp "^" exp)) (parse-exp (rest-exp "^" exp))))
+   ((string->number exp) (string->number exp))
+   (else (string->symbol exp))
+   ))
+;
+;(define (find-sub-exp exp)
+;  (define (find-sub-exp-end subexp count)
+;    (let ((fc (string-head subexp 1)))
+;      (cond ((string=? fc "(") (find-sub-exp-end (string-tail subexp 1) (+ count 1)))
+;	    ((string=? fc ")")
+;    (if (string-null? subexp)
+;	(if (= count
+;
+;
+;
+;(define (infix->prefix exp)
+;  (let ((fc (string-head exp 1)))
+;    (if (string=? fc "(")

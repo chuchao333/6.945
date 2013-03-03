@@ -126,3 +126,10 @@
 (defhandler analyze (compose analyze cond->if) cond?)
 
 (defhandler analyze (compose analyze let->combination) let?)
+
+;;; Problem 3.2: handle infix special form
+
+(define (infix? exp) (tagged-list? exp 'infix))
+(define (infix->prefix exp)
+  (parse-exp (cadr exp)))
+(defhandler analyze (compose analyze infix->prefix) infix?)
