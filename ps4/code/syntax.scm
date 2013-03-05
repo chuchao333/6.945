@@ -252,17 +252,3 @@
    ((string->number exp) (string->number exp))
    (else (string->symbol exp))
    ))
-;
-;(define (find-sub-exp exp)
-;  (define (find-sub-exp-end subexp count)
-;    (let ((fc (string-head subexp 1)))
-;      (cond ((string=? fc "(") (find-sub-exp-end (string-tail subexp 1) (+ count 1)))
-;	    ((string=? fc ")")
-;    (if (string-null? subexp)
-;	(if (= count
-;
-;
-;
-;(define (infix->prefix exp)
-;  (let ((fc (string-head exp 1)))
-;    (if (string=? fc "(")

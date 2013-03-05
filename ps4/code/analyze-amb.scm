@@ -56,6 +56,7 @@
 
 (defhandler analyze analyze-if if?)
 
+;; problem 4.4
 (define (analyze-if-fail exp)
   (let ((fproc (analyze (if-fail-first exp)))
 	(aproc (analyze (if-fail-alternative exp))))
@@ -165,7 +166,7 @@
 (defhandler analyze
   analyze-undoable-assignment
   assignment?)
-
+;;; Problem 4.4
 (define (analyze-permanent-assignment exp)
   (let ((var (assignment-variable exp))
         (vproc (analyze (assignment-value exp))))

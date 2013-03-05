@@ -66,7 +66,7 @@
   apply-primitive-procedure
   strict-primitive-procedure?)
 
-; Problem 3.1: make extending the environment a generic operation
+; Problem 4.1: make extending the environment a generic operation
 (define cust-ext-env
   (make-generic-operator 3 'custom-extend-environment
 			 (lambda (proc args env)
@@ -75,7 +75,7 @@
 (define (ext-env-inf proc args env)
   (extend-environment (list proc) (list args) env))
 
-; Problem 3.1: handle symbols differently
+; Problem 4.1: handle symbols differently
 (defhandler cust-ext-env ext-env-inf symbol?)
 
 (defhandler execute-application
@@ -127,7 +127,7 @@
 
 (defhandler analyze (compose analyze let->combination) let?)
 
-;;; Problem 3.2: handle infix special form
+;;; Problem 4.2: handle infix special form
 
 (define (infix? exp) (tagged-list? exp 'infix))
 (define (infix->prefix exp)

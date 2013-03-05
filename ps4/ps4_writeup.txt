@@ -16,7 +16,7 @@ Problem 4.2: Again, ps4_demo.scm demonstrates what I got working. However, I
 	the various operators (as opposed to currently, when I just look for the
 	next appearance of the given operator during tokenization). Given
 	support for parenthesis, unary support just requires looking for
-	non-arithmetic operators prefixes to parenthetical expressions.
+	non-arithmetic operator prefixes to parenthetical expressions.
 
 Problem 4.3
 
