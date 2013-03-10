@@ -1,0 +1,2085 @@
+%!PS-Adobe-3.0
+%%BoundingBox: 18 36 594 756
+%%Title: letter
+%%Creator: GNU Enscript 1.6.5.2
+%%CreationDate: Fri Mar  1 10:05:22 2013
+%%Orientation: Portrait
+%%Pages: (atend)
+%%DocumentMedia: Letter 612 792 0 () ()
+%%DocumentNeededResources: (atend)
+%%EndComments
+%%BeginProlog
+%%BeginResource: procset Enscript-Prolog 1.6.5 2
+%
+% Procedures.
+%
+
+/_S {	% save current state
+  /_s save def
+} def
+/_R {	% restore from saved state
+  _s restore
+} def
+
+/S {	% showpage protecting gstate
+  gsave
+  showpage
+  grestore
+} bind def
+
+/MF {	% fontname newfontname -> -	make a new encoded font
+  /newfontname exch def
+  /fontname exch def
+
+  /fontdict fontname findfont def
+  /newfont fontdict maxlength dict def
+
+  fontdict {
+    exch
+    dup /FID eq {
+      % skip FID pair
+      pop pop
+    } {
+      % copy to the new font dictionary
+      exch newfont 3 1 roll put
+    } ifelse
+  } forall
+
+  newfont /FontName newfontname put
+
+  % insert only valid encoding vectors
+  encoding_vector length 256 eq {
+    newfont /Encoding encoding_vector put
+  } if
+
+  newfontname newfont definefont pop
+} def
+
+/MF_PS { % fontname newfontname -> -	make a new font preserving its enc
+  /newfontname exch def
+  /fontname exch def
+
+  /fontdict fontname findfont def
+  /newfont fontdict maxlength dict def
+
+  fontdict {
+    exch
+    dup /FID eq {
+      % skip FID pair
+      pop pop
+    } {
+      % copy to the new font dictionary
+      exch newfont 3 1 roll put
+    } ifelse
+  } forall
+
+  newfont /FontName newfontname put
+
+  newfontname newfont definefont pop
+} def
+
+/SF { % fontname width height -> -	set a new font
+  /height exch def
+  /width exch def
+
+  findfont
+  [width 0 0 height 0 0] makefont setfont
+} def
+
+/SUF { % fontname width height -> -	set a new user font
+  /height exch def
+  /width exch def
+
+  /F-gs-user-font MF
+  /F-gs-user-font width height SF
+} def
+
+/SUF_PS { % fontname width height -> -	set a new user font preserving its enc
+  /height exch def
+  /width exch def
+
+  /F-gs-user-font MF_PS
+  /F-gs-user-font width height SF
+} def
+
+/M {moveto} bind def
+/s {show} bind def
+
+/Box {	% x y w h -> -			define box path
+  /d_h exch def /d_w exch def /d_y exch def /d_x exch def
+  d_x d_y  moveto
+  d_w 0 rlineto
+  0 d_h rlineto
+  d_w neg 0 rlineto
+  closepath
+} def
+
+/bgs {	% x y height blskip gray str -> -	show string with bg color
+  /str exch def
+  /gray exch def
+  /blskip exch def
+  /height exch def
+  /y exch def
+  /x exch def
+
+  gsave
+    x y blskip sub str stringwidth pop height Box
+    gray setgray
+    fill
+  grestore
+  x y M str s
+} def
+
+/bgcs { % x y height blskip red green blue str -> -  show string with bg color
+  /str exch def
+  /blue exch def
+  /green exch def
+  /red exch def
+  /blskip exch def
+  /height exch def
+  /y exch def
+  /x exch def
+
+  gsave
+    x y blskip sub str stringwidth pop height Box
+    red green blue setrgbcolor
+    fill
+  grestore
+  x y M str s
+} def
+
+% Highlight bars.
+/highlight_bars {	% nlines lineheight output_y_margin gray -> -
+  gsave
+    setgray
+    /ymarg exch def
+    /lineheight exch def
+    /nlines exch def
+
+    % This 2 is just a magic number to sync highlight lines to text.
+    0 d_header_y ymarg sub 2 sub translate
+
+    /cw d_output_w cols div def
+    /nrows d_output_h ymarg 2 mul sub lineheight div cvi def
+
+    % for each column
+    0 1 cols 1 sub {
+      cw mul /xp exch def
+
+      % for each rows
+      0 1 nrows 1 sub {
+        /rn exch def
+        rn lineheight mul neg /yp exch def
+        rn nlines idiv 2 mod 0 eq {
+	  % Draw highlight bar.  4 is just a magic indentation.
+	  xp 4 add yp cw 8 sub lineheight neg Box fill
+	} if
+      } for
+    } for
+
+  grestore
+} def
+
+% Line highlight bar.
+/line_highlight {	% x y width height gray -> -
+  gsave
+    /gray exch def
+    Box gray setgray fill
+  grestore
+} def
+
+% Column separator lines.
+/column_lines {
+  gsave
+    .1 setlinewidth
+    0 d_footer_h translate
+    /cw d_output_w cols div def
+    1 1 cols 1 sub {
+      cw mul 0 moveto
+      0 d_output_h rlineto stroke
+    } for
+  grestore
+} def
+
+% Column borders.
+/column_borders {
+  gsave
+    .1 setlinewidth
+    0 d_footer_h moveto
+    0 d_output_h rlineto
+    d_output_w 0 rlineto
+    0 d_output_h neg rlineto
+    closepath stroke
+  grestore
+} def
+
+% Do the actual underlay drawing
+/draw_underlay {
+  ul_style 0 eq {
+    ul_str true charpath stroke
+  } {
+    ul_str show
+  } ifelse
+} def
+
+% Underlay
+/underlay {	% - -> -
+  gsave
+    0 d_page_h translate
+    d_page_h neg d_page_w atan rotate
+
+    ul_gray setgray
+    ul_font setfont
+    /dw d_page_h dup mul d_page_w dup mul add sqrt def
+    ul_str stringwidth pop dw exch sub 2 div ul_h_ptsize -2 div moveto
+    draw_underlay
+  grestore
+} def
+
+/user_underlay {	% - -> -
+  gsave
+    ul_x ul_y translate
+    ul_angle rotate
+    ul_gray setgray
+    ul_font setfont
+    0 0 ul_h_ptsize 2 div sub moveto
+    draw_underlay
+  grestore
+} def
+
+% Page prefeed
+/page_prefeed {		% bool -> -
+  statusdict /prefeed known {
+    statusdict exch /prefeed exch put
+  } {
+    pop
+  } ifelse
+} def
+
+% Wrapped line markers
+/wrapped_line_mark {	% x y charwith charheight type -> -
+  /type exch def
+  /h exch def
+  /w exch def
+  /y exch def
+  /x exch def
+
+  type 2 eq {
+    % Black boxes (like TeX does)
+    gsave
+      0 setlinewidth
+      x w 4 div add y M
+      0 h rlineto w 2 div 0 rlineto 0 h neg rlineto
+      closepath fill
+    grestore
+  } {
+    type 3 eq {
+      % Small arrows
+      gsave
+        .2 setlinewidth
+        x w 2 div add y h 2 div add M
+        w 4 div 0 rlineto
+        x w 4 div add y lineto stroke
+
+        x w 4 div add w 8 div add y h 4 div add M
+        x w 4 div add y lineto
+	w 4 div h 8 div rlineto stroke
+      grestore
+    } {
+      % do nothing
+    } ifelse
+  } ifelse
+} def
+
+% EPSF import.
+
+/BeginEPSF {
+  /b4_Inc_state save def    		% Save state for cleanup
+  /dict_count countdictstack def	% Count objects on dict stack
+  /op_count count 1 sub def		% Count objects on operand stack
+  userdict begin
+  /showpage { } def
+  0 setgray 0 setlinecap
+  1 setlinewidth 0 setlinejoin
+  10 setmiterlimit [ ] 0 setdash newpath
+  /languagelevel where {
+    pop languagelevel
+    1 ne {
+      false setstrokeadjust false setoverprint
+    } if
+  } if
+} bind def
+
+/EndEPSF {
+  count op_count sub { pos } repeat	% Clean up stacks
+  countdictstack dict_count sub { end } repeat
+  b4_Inc_state restore
+} bind def
+
+% Check PostScript language level.
+/languagelevel where {
+  pop /gs_languagelevel languagelevel def
+} {
+  /gs_languagelevel 1 def
+} ifelse
+%%EndResource
+%%BeginResource: procset Enscript-Encoding-88591 1.6.5 2
+/encoding_vector [
+/.notdef      	/.notdef      	/.notdef      	/.notdef      	
+/.notdef      	/.notdef      	/.notdef      	/.notdef      	
+/.notdef      	/.notdef      	/.notdef      	/.notdef      	
+/.notdef      	/.notdef      	/.notdef      	/.notdef      	
+/.notdef      	/.notdef      	/.notdef      	/.notdef      	
+/.notdef      	/.notdef      	/.notdef      	/.notdef      	
+/.notdef      	/.notdef      	/.notdef      	/.notdef      	
+/.notdef      	/.notdef      	/.notdef      	/.notdef      	
+/space        	/exclam       	/quotedbl     	/numbersign   	
+/dollar       	/percent      	/ampersand    	/quoteright   	
+/parenleft    	/parenright   	/asterisk     	/plus         	
+/comma        	/hyphen       	/period       	/slash        	
+/zero         	/one          	/two          	/three        	
+/four         	/five         	/six          	/seven        	
+/eight        	/nine         	/colon        	/semicolon    	
+/less         	/equal        	/greater      	/question     	
+/at           	/A            	/B            	/C            	
+/D            	/E            	/F            	/G            	
+/H            	/I            	/J            	/K            	
+/L            	/M            	/N            	/O            	
+/P            	/Q            	/R            	/S            	
+/T            	/U            	/V            	/W            	
+/X            	/Y            	/Z            	/bracketleft  	
+/backslash    	/bracketright 	/asciicircum  	/underscore   	
+/quoteleft    	/a            	/b            	/c            	
+/d            	/e            	/f            	/g            	
+/h            	/i            	/j            	/k            	
+/l            	/m            	/n            	/o            	
+/p            	/q            	/r            	/s            	
+/t            	/u            	/v            	/w            	
+/x            	/y            	/z            	/braceleft    	
+/bar          	/braceright   	/tilde        	/.notdef      	
+/.notdef      	/.notdef      	/.notdef      	/.notdef      	
+/.notdef      	/.notdef      	/.notdef      	/.notdef      	
+/.notdef      	/.notdef      	/.notdef      	/.notdef      	
+/.notdef      	/.notdef      	/.notdef      	/.notdef      	
+/.notdef      	/.notdef      	/.notdef      	/.notdef      	
+/.notdef      	/.notdef      	/.notdef      	/.notdef      	
+/.notdef      	/.notdef      	/.notdef      	/.notdef      	
+/.notdef      	/.notdef      	/.notdef      	/.notdef      	
+/space        	/exclamdown   	/cent         	/sterling     	
+/currency     	/yen          	/brokenbar    	/section      	
+/dieresis     	/copyright    	/ordfeminine  	/guillemotleft	
+/logicalnot   	/hyphen       	/registered   	/macron       	
+/degree       	/plusminus    	/twosuperior  	/threesuperior	
+/acute        	/mu           	/paragraph    	/bullet       	
+/cedilla      	/onesuperior  	/ordmasculine 	/guillemotright	
+/onequarter   	/onehalf      	/threequarters	/questiondown 	
+/Agrave       	/Aacute       	/Acircumflex  	/Atilde       	
+/Adieresis    	/Aring        	/AE           	/Ccedilla     	
+/Egrave       	/Eacute       	/Ecircumflex  	/Edieresis    	
+/Igrave       	/Iacute       	/Icircumflex  	/Idieresis    	
+/Eth          	/Ntilde       	/Ograve       	/Oacute       	
+/Ocircumflex  	/Otilde       	/Odieresis    	/multiply     	
+/Oslash       	/Ugrave       	/Uacute       	/Ucircumflex  	
+/Udieresis    	/Yacute       	/Thorn        	/germandbls   	
+/agrave       	/aacute       	/acircumflex  	/atilde       	
+/adieresis    	/aring        	/ae           	/ccedilla     	
+/egrave       	/eacute       	/ecircumflex  	/edieresis    	
+/igrave       	/iacute       	/icircumflex  	/idieresis    	
+/eth          	/ntilde       	/ograve       	/oacute       	
+/ocircumflex  	/otilde       	/odieresis    	/divide       	
+/oslash       	/ugrave       	/uacute       	/ucircumflex  	
+/udieresis    	/yacute       	/thorn        	/ydieresis    	
+] def
+%%EndResource
+%%EndProlog
+%%BeginSetup
+%%IncludeResource: font Courier-Bold
+%%IncludeResource: font Courier
+/HFpt_w 10 def
+/HFpt_h 10 def
+/Courier /HF-gs-font MF
+/HF /HF-gs-font findfont [HFpt_w 0 0 HFpt_h 0 0] makefont def
+/Courier-Bold /F-gs-font MF
+/F-gs-font 12 12 SF
+/#copies 1 def
+% Pagedevice definitions:
+gs_languagelevel 1 gt {
+  <<
+    /PageSize [612 792] 
+  >> setpagedevice
+} if
+%%BeginResource: procset Enscript-Header-simple 1.6.5 2
+
+/do_header {	% print default simple header
+  gsave
+    d_header_x d_header_y HFpt_h 3 div add translate
+
+    HF setfont
+    user_header_p {
+      5 0 moveto user_header_left_str show
+
+      d_header_w user_header_center_str stringwidth pop sub 2 div
+      0 moveto user_header_center_str show
+
+      d_header_w user_header_right_str stringwidth pop sub 5 sub
+      0 moveto user_header_right_str show
+    } {
+      5 0 moveto fname show
+      45 0 rmoveto fmodstr show
+      45 0 rmoveto pagenumstr show
+    } ifelse
+
+  grestore
+} def
+%%EndResource
+/d_page_w 576 def
+/d_page_h 720 def
+/d_header_x 0 def
+/d_header_y 705 def
+/d_header_w 576 def
+/d_header_h 15 def
+/d_footer_x 0 def
+/d_footer_y 0 def
+/d_footer_w 576 def
+/d_footer_h 0 def
+/d_output_w 576 def
+/d_output_h 705 def
+/cols 1 def
+%%EndSetup
+%%Page: (1) 1
+%%BeginPageSetup
+_S
+18 36 translate
+/pagenum 1 def
+/fname (ps.txt) def
+/fdir (.) def
+/ftail (ps.txt) def
+% User defined strings:
+/fmodstr (Fri Mar 01 10:01:24 2013) def
+/pagenumstr (1) def
+/user_header_p false def
+/user_footer_p false def
+%%EndPageSetup
+do_header
+19.4 677 M
+(                MASSACHVSETTS INSTITVTE OF TECHNOLOGY) s
+19.4 664 M
+(      Department of Electrical Engineering and Computer Science) s
+19.4 638 M
+(                          6.945 Spring 2013) s
+19.4 625 M
+(                            Problem Set 5) s
+19.4 599 M
+( Issued: Wed. 6 March 2013                    Due: Wed. 13 March 2013) s
+19.4 560 M
+(Reading: SICP Section 4.4, especially 4.4.4.3 and 4.4.4.4) s
+19.4 534 M
+(          MIT Scheme Reference Manual, section 2.11: Macros) s
+19.4 521 M
+(          This is complicated stuff, so don't try to read it until you) s
+19.4 508 M
+(          need to in the compilation part of the problem set.) s
+19.4 482 M
+(Code: load.scm, matcher.scm, pattern-directed-invocation.scm,) s
+19.4 469 M
+(      rules.scm, and eq-properties.scm, ghelper.scm, utils.scm.) s
+19.4 430 M
+(                  Pattern Matching and Instantiation) s
+19.4 404 M
+(One of the most important techniques in advanced symbolic programming) s
+19.4 391 M
+(is the use of patterns.  We can match patterns against data objects,) s
+19.4 378 M
+(and we can instantiate a pattern to make a data object.  For example,) s
+19.4 365 M
+(the elementary laws of algebra are usually expressed as patterns and) s
+19.4 352 M
+(instantiations:) s
+19.4 326 M
+(                   a * \(b + c\) <==> a * b  +  a * c) s
+19.4 300 M
+(This is the distributive law of multiplication over addition.  It says) s
+19.4 287 M
+(that we can replace one side with the other without changing the value) s
+19.4 274 M
+(of the expression.  Each side of the law is a pattern, with particular) s
+19.4 261 M
+(pattern variables a, b, c, and pattern constants *, +.  More) s
+19.4 248 M
+(precisely, what the law says is that if we find an algebraic) s
+19.4 235 M
+(expression that is the product of something and a sum of terms, we can) s
+19.4 222 M
+(replace it with a sum of two products, and vice versa.) s
+19.4 196 M
+(In this problem set we will investigate how to organize programs based) s
+19.4 183 M
+(on pattern-match.  A key idea will be compilation of patterns into) s
+19.4 170 M
+(combinators that are the pieces of a matcher.  Then we will see how to) s
+19.4 157 M
+(use matching in a term-rewriting system for elementary algebra.) s
+19.4 118 M
+(                        A Language of Patterns) s
+19.4 92 M
+(The first job is to make up our language of patterns.  We will start) s
+19.4 79 M
+(with something simple.  We will make our patterns out of Lisp \(Scheme\)) s
+19.4 66 M
+(lists.  Unlike the mathematical example above, we will not have) s
+19.4 53 M
+(reserved symbols, such as * and +, so we will have to distinguish) s
+_R
+S
+%%Page: (2) 2
+%%BeginPageSetup
+_S
+18 36 translate
+/pagenum 2 def
+/fname (ps.txt) def
+/fdir (.) def
+/ftail (ps.txt) def
+% User defined strings:
+/fmodstr (Fri Mar 01 10:01:24 2013) def
+/pagenumstr (2) def
+/user_header_p false def
+/user_footer_p false def
+%%EndPageSetup
+do_header
+19.4 677 M
+(pattern variables from pattern constants.  Pattern variables can be) s
+19.4 664 M
+(represented by lists beginning with the query symbol: "?".  This is a) s
+19.4 651 M
+(traditional choice.  So in this language the patterns that make up the) s
+19.4 638 M
+(distributive law may be represented as follows, assuming that we are) s
+19.4 625 M
+(manipulating Lisp prefix mathematical expressions:) s
+19.4 599 M
+(                      \(* \(? a\) \(+ \(? b\) \(? c\)\)\)) s
+19.4 573 M
+(                 \(+ \(* \(? a\) \(? b\)\) \(* \(? a\) \(? c\)\)\)) s
+19.4 547 M
+(You might complain that we could have used distinguished symbols, such) s
+19.4 534 M
+(as "?a" instead of the long-winded \(? a\).  That would be fine, but) s
+19.4 521 M
+(that choice will make it a bit harder to extend, say if we want a) s
+19.4 508 M
+(variable that is restricted to match only numbers.  Of course, we can) s
+19.4 495 M
+(add syntax later if it is helpful, but remember Alan Perlis's maxim:) s
+19.4 482 M
+("Syntactic sugar causes cancer of the semicolon.") s
+19.4 456 M
+(One constraint on our design of the matcher is that the second pattern) s
+19.4 443 M
+(above should match) s
+19.4 417 M
+(                \(+ \(* \(cos x\) \(exp y\)\) \(* \(cos x\) \(sin z\)\)\)) s
+19.4 391 M
+(where a=\(cos x\), b=\(exp y\), and c=\(sin z\).  It should not match) s
+19.4 365 M
+(                \(+ \(* \(cos x\) \(exp y\)\) \(* \(cos \(+ x y\)\) \(sin z\)\)\)) s
+19.4 339 M
+(because there is no consistent assignment possible for \(? a\) \(unless,) s
+19.4 326 M
+(somehow x=x+y.  We will learn about that sort of stuff later if it) s
+19.4 313 M
+(will be necessary to study unification matching.  Here we will decide) s
+19.4 300 M
+(that there is no match possible.\)) s
+19.4 274 M
+(Another constraint, which will have important influence on the) s
+19.4 261 M
+(structure of the matcher, is the requirement for "segment variables.") s
+19.4 248 M
+(Suppose we want to find instances of particular patterns in a sequence) s
+19.4 235 M
+(of many terms.  For example, suppose we want to make a rule to find) s
+19.4 222 M
+(combinations of squares of sines and cosines and replace them with 1:) s
+19.4 196 M
+(   \(+ ... \(expt \(sin theta\) 2\) ... \(expt \(cos theta\) 2\) ...\)) s
+19.4 183 M
+(     ==> \(+ 1 ... ... ...\)) s
+19.4 157 M
+(The "..." here may stand for many terms.  We will need segment) s
+19.4 144 M
+(variables, with the prefix "??", that can match many terms.  So the) s
+19.4 131 M
+(pattern we will write is:) s
+19.4 105 M
+( \(+ \(?? t1\) \(expt \(sin \(? x\)\) 2\) \(?? t2\) \(expt \(cos \(? x\)\) 2\) \(?? t3\)\)) s
+19.4 92 M
+(   ==> \(+ 1 \(?? t1\) \(?? t2\) \(?? t3\)\)) s
+_R
+S
+%%Page: (3) 3
+%%BeginPageSetup
+_S
+18 36 translate
+/pagenum 3 def
+/fname (ps.txt) def
+/fdir (.) def
+/ftail (ps.txt) def
+% User defined strings:
+/fmodstr (Fri Mar 01 10:01:24 2013) def
+/pagenumstr (3) def
+/user_header_p false def
+/user_footer_p false def
+%%EndPageSetup
+do_header
+19.4 677 M
+(Segment variables have a profound effect, because we don't know how) s
+19.4 664 M
+(long a segment is until we find the next part that matches, and we may) s
+19.4 651 M
+(be able to match the same data item many ways.  For example, there may) s
+19.4 638 M
+(be both squares of sines and cosines of angles theta and phi in the) s
+19.4 625 M
+(same sum.  Even simpler, the pattern) s
+19.4 599 M
+( \(a \(?? x\) \(?? y\) \(?? x\) c\) can match the datum \(a b b b b b b c\)) s
+19.4 573 M
+(in four different ways.  \(Notice that the segment variable x must eat) s
+19.4 560 M
+(up the same number of "b"s in the two places it appears in the) s
+19.4 547 M
+(pattern.\)  So the matcher must do a search over the space of possible) s
+19.4 534 M
+(assignments to the segment variables.) s
+19.4 508 M
+(                        Design of the Matcher) s
+19.4 482 M
+(A matcher for a particular pattern is constructed from a family of) s
+19.4 469 M
+(mix-and-match combinators that can be combined to make combinators of) s
+19.4 456 M
+(the same type.  Each primitive element of the pattern is represented) s
+19.4 443 M
+(by a primitive combinator and the only combination, list, is) s
+19.4 430 M
+(represented by a combinator that combines combinators to make a) s
+19.4 417 M
+(compound one.) s
+19.4 391 M
+(The match combinators are procedures that take three arguments: data) s
+19.4 378 M
+(to be matched, a dictionary of bindings of pattern variables, and a) s
+19.4 365 M
+(procedure to be called if the match is successful.  The argument to) s
+19.4 352 M
+(the succeed procedure must be the new dictionary resulting from the) s
+19.4 339 M
+(match.  A match combinator returns #f if the match is unsuccessful.) s
+19.4 326 M
+(Segment variable combinators will have a slightly different interface.) s
+19.4 300 M
+(There are four basic match combinators.  Let's go through them one by) s
+19.4 287 M
+(one.) s
+19.4 248 M
+(The match procedure match:eqv takes a pattern constant and produces a) s
+19.4 235 M
+(match combinator.  It succeeds if and only if the data is equal \(using) s
+19.4 222 M
+(eqv?\) to the pattern constant.  If successful, it does not add to the) s
+19.4 209 M
+(dictionary.) s
+19.4 183 M
+(\(define \(match:eqv pattern-constant\)) s
+19.4 170 M
+(  \(define \(eqv-match data dictionary succeed\)) s
+19.4 157 M
+(    \(and \(eqv? data pattern-constant\)) s
+19.4 144 M
+(         \(succeed dictionary\)\)\)) s
+19.4 131 M
+(  eqv-match\)) s
+_R
+S
+%%Page: (4) 4
+%%BeginPageSetup
+_S
+18 36 translate
+/pagenum 4 def
+/fname (ps.txt) def
+/fdir (.) def
+/ftail (ps.txt) def
+% User defined strings:
+/fmodstr (Fri Mar 01 10:01:24 2013) def
+/pagenumstr (4) def
+/user_header_p false def
+/user_footer_p false def
+%%EndPageSetup
+do_header
+19.4 677 M
+(The match procedure match:element is used to make a match combinator) s
+19.4 664 M
+(for an ordinary pattern variable, such as \(? x\).  There are two cases.) s
+19.4 651 M
+(If the variable already has a value in the dictionary the combinator) s
+19.4 638 M
+(succeeds only if the value is equal \(using equal?\) to the data.  If) s
+19.4 625 M
+(the variable has no value, the combinator succeeds with the new) s
+19.4 612 M
+(dictionary resulting from binding the variable to the data in the) s
+19.4 599 M
+(given dictionary.) s
+19.4 573 M
+(\(define \(match:element variable\)) s
+19.4 560 M
+(  \(define \(element-match data dictionary succeed\)) s
+19.4 547 M
+(    \(let \(\(vcell \(match:lookup variable dictionary\)\)\)) s
+19.4 534 M
+(      \(if vcell) s
+19.4 521 M
+(          \(and \(equal? \(match:value vcell\) data\)) s
+19.4 508 M
+(               \(succeed dictionary\)\)) s
+19.4 495 M
+(          \(succeed \(match:bind variable data dictionary\)\)\)\)\)) s
+19.4 482 M
+(  element-match\)) s
+19.4 456 M
+(A segment variable procedure makes a more interesting combinator.  In) s
+19.4 443 M
+(order to be able to match a segment of a list, the segment matcher) s
+19.4 430 M
+(combinator must be given the list containing the segment as its data,) s
+19.4 417 M
+(and must inform its caller not only of the new dictionary, but also) s
+19.4 404 M
+(how many items from the list were eaten.  As you will see in the) s
+19.4 391 M
+(match:list combinator below, a call to a segment matcher is different) s
+19.4 378 M
+(from a call to any other kind of matcher.) s
+19.4 352 M
+(\(define \(match:segment variable\)) s
+19.4 339 M
+(  \(define \(segment-match data dictionary succeed\)) s
+19.4 326 M
+(    \(and \(list? data\)) s
+19.4 313 M
+(         \(let \(\(vcell \(match:lookup variable dictionary\)\)\)) s
+19.4 300 M
+(           \(if vcell) s
+19.4 287 M
+(               \(let lp \(\(data data\)) s
+19.4 274 M
+(                        \(pattern \(match:value vcell\)\)) s
+19.4 261 M
+(                        \(n 0\)\)) s
+19.4 248 M
+(                 \(cond \(\(pair? pattern\)) s
+19.4 235 M
+(                        \(if \(and \(pair? data\)) s
+19.4 222 M
+(                                 \(equal? \(car data\) \(car pattern\)\)\)) s
+19.4 209 M
+(                            \(lp \(cdr data\) \(cdr pattern\) \(+ n 1\)\)) s
+19.4 196 M
+(                            #f\)\)) s
+19.4 183 M
+(                       \(\(not \(null? pattern\)\) #f\)) s
+19.4 170 M
+(                       \(else \(succeed dictionary n\)\)\)\)) s
+19.4 157 M
+(               \(let \(\(n \(length data\)\)\)) s
+19.4 144 M
+(                 \(let lp \(\(i 0\)\)) s
+19.4 131 M
+(                   \(if \(<= i n\)) s
+19.4 118 M
+(                       \(or \(succeed \(match:bind variable) s
+19.4 105 M
+(                                                \(list-head data i\)) s
+19.4 92 M
+(                                                dictionary\)) s
+19.4 79 M
+(                                    i\)) s
+19.4 66 M
+(                           \(lp \(+ i 1\)\)\)) s
+19.4 53 M
+(                       #f\)\)\)\)\)\)\)) s
+19.4 40 M
+(  \(segment-matcher! segment-match\) ; A sticky note) s
+19.4 27 M
+(  segment-match\)) s
+_R
+S
+%%Page: (5) 5
+%%BeginPageSetup
+_S
+18 36 translate
+/pagenum 5 def
+/fname (ps.txt) def
+/fdir (.) def
+/ftail (ps.txt) def
+% User defined strings:
+/fmodstr (Fri Mar 01 10:01:24 2013) def
+/pagenumstr (5) def
+/user_header_p false def
+/user_footer_p false def
+%%EndPageSetup
+do_header
+19.4 677 M
+(Because the input data is a list we can compute its length.  Again,) s
+19.4 664 M
+(there are two possibilities, either the variable already has a value) s
+19.4 651 M
+(or it does not yet have a value.  If it has a value, each item of the) s
+19.4 638 M
+(value must be the same as a corresponding item from the data.  If this) s
+19.4 625 M
+(is true, the match succeeds, eating a number of items from the input) s
+19.4 612 M
+(data equal to the number in the stored value.  If the segment variable) s
+19.4 599 M
+(does not yet have a value it must be given one.  The segment-variable) s
+19.4 586 M
+(match combinator starts by assuming that the segment will eat no items) s
+19.4 573 M
+(from the data.  However, if that success ultimately leads to a later) s
+19.4 560 M
+(failure in the match, the segment tries to eat one more element than) s
+19.4 547 M
+(it had already tried.  \(This is accomplished by executing \(lp \(+ i) s
+19.4 534 M
+(1\)\).\)  If the segment variable runs out of data items, it fails to) s
+19.4 521 M
+(match.) s
+19.4 495 M
+(Finally, there is the list matcher:) s
+19.4 469 M
+(\(define \(match:list . match-combinators\)) s
+19.4 456 M
+(  \(define \(list-match data dictionary succeed\)) s
+19.4 443 M
+(    \(let lp \(\(data data\)) s
+19.4 430 M
+(             \(matchers match-combinators\)) s
+19.4 417 M
+(             \(dictionary dictionary\)\)) s
+19.4 404 M
+(      \(define \(try-element submatcher\)) s
+19.4 391 M
+(        \(submatcher \(car data\) dictionary) s
+19.4 378 M
+(          \(lambda \(new-dictionary\)) s
+19.4 365 M
+(            \(lp \(cdr data\) \(cdr matchers\)) s
+19.4 352 M
+(                new-dictionary\)\)\)\)) s
+19.4 339 M
+(      \(define \(try-segment submatcher\)) s
+19.4 326 M
+(        \(submatcher data dictionary) s
+19.4 313 M
+(          \(lambda \(new-dictionary n\)) s
+19.4 300 M
+(            \(lp \(list-tail data n\) \(cdr matchers\)) s
+19.4 287 M
+(                new-dictionary\)\)\)\)) s
+19.4 274 M
+(      \(cond \(\(pair? matchers\)) s
+19.4 261 M
+(             \(if \(segment-matcher? \(car matchers\)\)) s
+19.4 248 M
+(                 \(try-segment \(car matchers\)\)) s
+19.4 235 M
+(                 \(and \(pair? data\)) s
+19.4 222 M
+(                      \(try-element \(car matchers\)\)\)\)\)) s
+19.4 209 M
+(            \(\(pair? data\) #f\)) s
+19.4 196 M
+(            \(\(null? data\)) s
+19.4 183 M
+(             \(succeed dictionary\)\)) s
+19.4 170 M
+(            \(else #f\)\)\)\)) s
+19.4 157 M
+(  list-match\)) s
+19.4 131 M
+(The list match procedure takes match combinators and makes a list) s
+19.4 118 M
+(combinator that matches a list if and only if the given match) s
+19.4 105 M
+(combinators eat up all of the elements in the data list.  It applies) s
+19.4 92 M
+(the combinators in succession.  Segment combinators are called) s
+19.4 79 M
+(differently.  When a segment combinator succeeds it tells the list) s
+19.4 66 M
+(combinator how many items to jump over before passing the result to) s
+19.4 53 M
+(the next combinator.  The list combinator determines whether a) s
+19.4 40 M
+(submatcher is a segment matcher by seeing whether it has the) s
+19.4 27 M
+(appropriate sticky note attached.) s
+_R
+S
+%%Page: (6) 6
+%%BeginPageSetup
+_S
+18 36 translate
+/pagenum 6 def
+/fname (ps.txt) def
+/fdir (.) def
+/ftail (ps.txt) def
+% User defined strings:
+/fmodstr (Fri Mar 01 10:01:24 2013) def
+/pagenumstr (6) def
+/user_header_p false def
+/user_footer_p false def
+%%EndPageSetup
+do_header
+19.4 677 M
+(Notice that the list combinator has exactly the same interface as a) s
+19.4 664 M
+(single element, allowing it to be incorporated into a combination.) s
+19.4 638 M
+(The dictionary we will use is just an alist of variable-value pairs:) s
+19.4 612 M
+(\(define \(match:bind variable data-object dictionary\)) s
+19.4 599 M
+(  \(cons \(list variable data-object\) dictionary\)\)) s
+19.4 573 M
+(\(define \(match:lookup variable dictionary\)) s
+19.4 560 M
+(  \(assq variable dictionary\)\)) s
+19.4 534 M
+(\(define \(match:value vcell\)) s
+19.4 521 M
+(  \(cadr vcell\)\)) s
+19.4 495 M
+(Our sticky notes use the supplied eq-properties.scm mechanism for) s
+19.4 482 M
+(general sticky notes:) s
+19.4 456 M
+(\(define \(segment-matcher! thing\)) s
+19.4 443 M
+(  \(eq-put! thing 'segment-matcher #t\)\)) s
+19.4 417 M
+(\(define \(segment-matcher? thing\)) s
+19.4 404 M
+(  \(eq-get thing 'segment-matcher\)\)) s
+19.4 378 M
+(Property lists are a way of creating data that looks like a record) s
+19.4 365 M
+(structure without commiting to the fields that will be used until run) s
+19.4 352 M
+(time.  The use of such flexible structures is frowned upon by most) s
+19.4 339 M
+(computer scientists, because it is hard to statically determine the) s
+19.4 326 M
+(bounds of the behavior of a program written using this stuff.  But it) s
+19.4 313 M
+(makes it easy to write programs that confuse such computer scientists.) s
+19.4 300 M
+(I personally find it difficult to write without such crutches.  We) s
+19.4 287 M
+(will encounter this idea many times in the future.) s
+_R
+S
+%%Page: (7) 7
+%%BeginPageSetup
+_S
+18 36 translate
+/pagenum 7 def
+/fname (ps.txt) def
+/fdir (.) def
+/ftail (ps.txt) def
+% User defined strings:
+/fmodstr (Fri Mar 01 10:01:24 2013) def
+/pagenumstr (7) def
+/user_header_p false def
+/user_footer_p false def
+%%EndPageSetup
+do_header
+19.4 677 M
+(                       Using Match Combinators) s
+19.4 651 M
+(For example, we can make a combinator that matches a list of any) s
+19.4 638 M
+(number of elements, starting with the symbol a, ending with the symbol) s
+19.4 625 M
+(b, and with a segment variable \(?? x\) between them by the combination:) s
+19.4 599 M
+(  \(match:list \(match:eqv 'a\) \(match:segment 'x\) \(match:eqv 'b\)\)) s
+19.4 573 M
+(We can apply it to data.  The initial dictionary is the empty list. ) s
+19.4 547 M
+(\(\(match:list \(match:eqv 'a\) \(match:segment 'x\) \(match:eqv 'b\)\)) s
+19.4 534 M
+( '\(a 1 2 b\) '\(\)) s
+19.4 521 M
+( \(lambda \(d\) d\)\)) s
+19.4 508 M
+(;Value: \(\(x \(1 2\)\)\)) s
+19.4 482 M
+(This was a successful match.) s
+19.4 469 M
+(The dictionary returned has exactly one entry: x=\(1 2\).  ) s
+19.4 443 M
+(\(\(match:list \(match:eqv 'a\) \(match:segment 'x\) \(match:eqv 'b\)\)) s
+19.4 430 M
+( '\(a 1 2 b 3\) '\(\)) s
+19.4 417 M
+( \(lambda \(d\) d\)\)) s
+19.4 404 M
+(;Value: #f) s
+19.4 378 M
+(This was a failure, because there was nothing to match the 3 after the) s
+19.4 365 M
+(b in the input data.) s
+19.4 339 M
+(We can automate the construction of pattern matchers from patterns) s
+19.4 326 M
+(with an elementary compiler.  First, we need to define the syntax.) s
+19.4 300 M
+(\(define \(match:element? pattern\)) s
+19.4 287 M
+(  \(and \(pair? pattern\)) s
+19.4 274 M
+(       \(eq? \(car pattern\) '?\)\)\)) s
+19.4 248 M
+(\(define \(match:segment? pattern\)) s
+19.4 235 M
+(  \(and \(pair? pattern\)) s
+19.4 222 M
+(       \(eq? \(car pattern\) '??\)\)\)) s
+19.4 196 M
+(\(define \(match:variable-name pattern\)) s
+19.4 183 M
+(  \(cadr pattern\)\)) s
+19.4 157 M
+(\(define \(match:list? pattern\)) s
+19.4 144 M
+(  \(and \(list? pattern\)) s
+19.4 131 M
+(       \(or \(null? pattern\)) s
+19.4 118 M
+(           \(not \(memq \(car pattern\) '\(? ??\)\)\)\)\)\)) s
+19.4 92 M
+(List syntax is any list that does not begin with a variable ) s
+19.4 79 M
+(declaration.) s
+_R
+S
+%%Page: (8) 8
+%%BeginPageSetup
+_S
+18 36 translate
+/pagenum 8 def
+/fname (ps.txt) def
+/fdir (.) def
+/ftail (ps.txt) def
+% User defined strings:
+/fmodstr (Fri Mar 01 10:01:24 2013) def
+/pagenumstr (8) def
+/user_header_p false def
+/user_footer_p false def
+%%EndPageSetup
+do_header
+19.4 677 M
+(The compiler itself is just a generic operator.) s
+19.4 651 M
+(\(define match:->combinators \(make-generic-operator 1 'eqv match:eqv\)\)) s
+19.4 625 M
+(\(defhandler match:->combinators) s
+19.4 612 M
+(  \(lambda \(pattern\) \(match:element \(match:variable-name pattern\)\)\)) s
+19.4 599 M
+(  match:element?\)) s
+19.4 573 M
+(\(defhandler match:->combinators) s
+19.4 560 M
+(  \(lambda \(pattern\) \(match:segment \(match:variable-name pattern\)\)\)) s
+19.4 547 M
+(  match:segment?\)) s
+19.4 521 M
+(\(defhandler match:->combinators) s
+19.4 508 M
+(  \(lambda \(pattern\)) s
+19.4 495 M
+(    \(apply match:list \(map match:->combinators pattern\)\)\)) s
+19.4 482 M
+(  match:list?\)) s
+19.4 456 M
+(By varying this compiler, we can change the syntax of patterns any way) s
+19.4 443 M
+(we like.) s
+19.4 417 M
+(The compiler produces as its value a match combinator appropriate for) s
+19.4 404 M
+(the pattern it is given: it has exactly the same interface as the) s
+19.4 391 M
+(elementary combinators given.  Some simple examples are:) s
+19.4 365 M
+(     \(\(match:->combinators '\(a \(\(? b\) 2 3\) \(? b\) c\)\)) s
+19.4 352 M
+(      '\(a \(1 2 3\) 2 c\) '\(\)) s
+19.4 339 M
+(       \(lambda \(x\) `\(succeed ,x\)\)\)) s
+19.4 326 M
+(     ;Value: #f) s
+19.4 300 M
+(     \(\(match:->combinators '\(a \(\(? b\) 2 3\) \(? b\) c\)\)) s
+19.4 287 M
+(      '\(a \(1 2 3\) 1 c\) '\(\)) s
+19.4 274 M
+(       \(lambda \(x\) `\(succeed ,x\)\)\)) s
+19.4 261 M
+(     ;Value: \(succeed \(\(b 1\)\)\)) s
+19.4 235 M
+(Some patterns involving segment variables may match in many ways.  We) s
+19.4 222 M
+(can elicit all of the matches by failing back into the matcher to) s
+19.4 209 M
+(select the next one, until they are all exhausted:) s
+19.4 183 M
+(     \(\(match:->combinators '\(a \(?? x\) \(?? y\) \(?? x\) c\)\)) s
+19.4 170 M
+(      '\(a b b b b b b c\) '\(\)) s
+19.4 157 M
+(      \(lambda \(dict\)) s
+19.4 144 M
+(        \(pp `\(succeed ,dict\)\)) s
+19.4 131 M
+(        #f\)\)) s
+19.4 118 M
+(     \(succeed \(\(y \(b b b b b b\)\) \(x \(\)\)\)\)) s
+19.4 105 M
+(     \(succeed \(\(y \(b b b b\)\) \(x \(b\)\)\)\)) s
+19.4 92 M
+(     \(succeed \(\(y \(b b\)\) \(x \(b b\)\)\)\)) s
+19.4 79 M
+(     \(succeed \(\(y \(\)\) \(x \(b b b\)\)\)\)) s
+19.4 66 M
+(     ;Value: #f) s
+_R
+S
+%%Page: (9) 9
+%%BeginPageSetup
+_S
+18 36 translate
+/pagenum 9 def
+/fname (ps.txt) def
+/fdir (.) def
+/ftail (ps.txt) def
+% User defined strings:
+/fmodstr (Fri Mar 01 10:01:24 2013) def
+/pagenumstr (9) def
+/user_header_p false def
+/user_footer_p false def
+%%EndPageSetup
+do_header
+19.4 677 M
+(-------------) s
+19.4 664 M
+(Problem 5.1:) s
+19.4 638 M
+(In the example above we got multiple matches, by returning #f from a) s
+19.4 625 M
+(success procedure.  This is probably pretty mysterious.  How does it) s
+19.4 612 M
+(work?  Explain, in a short but concise paragraph, how the sequence of) s
+19.4 599 M
+(matches is generated.) s
+19.4 586 M
+(-------------) s
+19.4 560 M
+(This interface is not very nice for using the matcher.  It is) s
+19.4 547 M
+(convenient for building into other systems that need this flexibility.) s
+19.4 534 M
+(However, for playing with the matcher it is convenient to use:) s
+19.4 508 M
+(     \(define \(matcher pattern\)) s
+19.4 495 M
+(       \(let \(\(match-combinator \(match:->combinators pattern\)\)\)) s
+19.4 482 M
+(         \(lambda \(datum\)) s
+19.4 469 M
+(           \(match-combinator datum '\(\)) s
+19.4 456 M
+(            \(lambda \(dictionary\) dictionary\)\)\)\)\)) s
+19.4 430 M
+(With this interface we explicitly give the pattern to get the matcher) s
+19.4 417 M
+(procedure.  We give the matcher procedure the datum the pattern is to) s
+19.4 404 M
+(match, and we get either a dictionary or #f.) s
+19.4 378 M
+(\(\(matcher '\(a \(\(? b\) 2 3\) \(? b\) c\)\)) s
+19.4 365 M
+( '\(a \(1 2 3\) 1 c\)\)) s
+19.4 352 M
+(;Value: \(\(b 1\)\)) s
+19.4 235 M
+(                             Restrictions) s
+19.4 209 M
+(Quite often we want to restrict the kind of object that can be matched) s
+19.4 196 M
+(by a pattern variable.  For example, we may want to make a pattern) s
+19.4 183 M
+(where a variable can only match a positive integer.  For example, we) s
+19.4 170 M
+(may be interested in finding positive integer powers of sine) s
+19.4 157 M
+(functions.  We could write the pattern we want as follows:) s
+19.4 131 M
+(        `\(expt \(sin \(? x\)\) \(? n ,exact-positive-integer?\)\)) s
+19.4 105 M
+(We need a matcher procedure that can be used to make a matcher) s
+19.4 92 M
+(combinator satisfying this requirement.  One way to do this is to make) s
+_R
+S
+%%Page: (10) 10
+%%BeginPageSetup
+_S
+18 36 translate
+/pagenum 10 def
+/fname (ps.txt) def
+/fdir (.) def
+/ftail (ps.txt) def
+% User defined strings:
+/fmodstr (Fri Mar 01 10:01:24 2013) def
+/pagenumstr (10) def
+/user_header_p false def
+/user_footer_p false def
+%%EndPageSetup
+do_header
+19.4 677 M
+(match:element take an extra argument, perhaps optional, which is the) s
+19.4 664 M
+(predicate for testing the datum for acceptability.  This change is as) s
+19.4 651 M
+(follows \(including a replacement syntax handler\):) s
+19.4 625 M
+(     \(define \(match:element variable restrictions\)) s
+19.4 612 M
+(       \(define \(ok? datum\)) s
+19.4 599 M
+(         \(every \(lambda \(restriction\) \(restriction datum\)\)) s
+19.4 586 M
+(                restrictions\)\)) s
+19.4 573 M
+(       \(define \(element-match data dictionary succeed\)) s
+19.4 560 M
+(         \(and \(ok? data\)) s
+19.4 547 M
+(              \(let \(\(vcell \(match:lookup variable dictionary\)\)\)) s
+19.4 534 M
+(                \(if vcell) s
+19.4 521 M
+(                    \(and \(equal? \(match:value vcell\) data\)) s
+19.4 508 M
+(                         \(succeed dictionary\)\)) s
+19.4 495 M
+(                    \(succeed \(match:bind variable data dictionary\)\)\)\)\)\)) s
+19.4 482 M
+(       element-match\)) s
+19.4 456 M
+(     \(defhandler match:->combinators) s
+19.4 443 M
+(       \(lambda \(pattern\)) s
+19.4 430 M
+(         \(match:element \(match:variable-name pattern\)) s
+19.4 417 M
+(                        \(match:restrictions pattern\)\)\)) s
+19.4 404 M
+(       match:element?\)) s
+19.4 378 M
+(There was a nasty problem of evaluation of the predicate expression) s
+19.4 365 M
+(with the compilation of the matcher syntax for the restriction) s
+19.4 352 M
+(predicate \(exact-positive-integer?\).  The symbols expt and sin are) s
+19.4 339 M
+(pattern constants, but the symbol exact-positive-integer?  must be) s
+19.4 326 M
+(evaluated to a procedure.  We specify the input patterns using) s
+19.4 313 M
+(quasiquote \(a.k.a.  backquote\) to solve this problem.  For example,) s
+19.4 287 M
+(              `\(a b ,\(+ 20 3\) d\) --> \(a b 23 d\)) s
+19.4 261 M
+(Consult the MIT Scheme Reference Manual for details on QUASIQUOTE.) s
+19.4 222 M
+(                            Choice is Good) s
+19.4 196 M
+(An interesting way to extend our pattern language is to introduce a) s
+19.4 183 M
+(choice operator:) s
+19.4 157 M
+(  \(?:choice <pattern>...\)) s
+19.4 131 M
+(This should compile into a combinator that tries to match each of the) s
+19.4 118 M
+(\(possibly null\) list of <pattern>s in order from left to right,) s
+19.4 105 M
+(returning the first successful match or #f if none match.  \(This) s
+19.4 92 M
+(should remind you of regular expression "alternation" but the choice) s
+19.4 79 M
+(of the name "choice" is more traditional in pattern matching.\)) s
+_R
+S
+%%Page: (11) 11
+%%BeginPageSetup
+_S
+18 36 translate
+/pagenum 11 def
+/fname (ps.txt) def
+/fdir (.) def
+/ftail (ps.txt) def
+% User defined strings:
+/fmodstr (Fri Mar 01 10:01:24 2013) def
+/pagenumstr (11) def
+/user_header_p false def
+/user_footer_p false def
+%%EndPageSetup
+do_header
+19.4 677 M
+(For example:) s
+19.4 651 M
+(\(\(match:->combinators '\(?:choice a b \(? x\) c\)\)) s
+19.4 638 M
+( 'z '\(\)) s
+19.4 625 M
+( \(lambda \(d\) `\(succeed ,d\)\)\)) s
+19.4 612 M
+(;Value: \(succeed \(\(x z\)\)\)) s
+19.4 586 M
+(\(\(match:->combinators) s
+19.4 573 M
+( `\(\(? y\) \(?:choice a b \(? x ,string?\) \(? y ,symbol?\) c\)\)\)) s
+19.4 560 M
+( '\(z z\) '\(\)) s
+19.4 547 M
+( \(lambda \(d\) `\(succeed ,d\)\)\)) s
+19.4 534 M
+(;Value: \(succeed \(\(y z\)\)\)) s
+19.4 508 M
+(\(\(match:->combinators `\(?:choice b \(? x ,symbol?\)\)\)) s
+19.4 495 M
+(  'b '\(\)) s
+19.4 482 M
+(  \(lambda \(x\)) s
+19.4 469 M
+(    \(pp `\(succeed ,x\)\)) s
+19.4 456 M
+(    #f\)\)) s
+19.4 443 M
+(\(succeed \(\)\)) s
+19.4 430 M
+(\(succeed \(\(x b\)\)\)) s
+19.4 417 M
+(;Value: #f) s
+19.4 391 M
+(-------------) s
+19.4 378 M
+(Problem 5.2:) s
+19.4 352 M
+(Implement a new matcher procedure, match:choice, for this new pattern) s
+19.4 339 M
+(schema.  Augment the pattern compiler appropriately.) s
+19.4 313 M
+(As always, demonstrate your code on the examples provided and on a) s
+19.4 300 M
+(couple of your own, both positive and negative boundary cases.) s
+19.4 287 M
+(-------------) s
+_R
+S
+%%Page: (12) 12
+%%BeginPageSetup
+_S
+18 36 translate
+/pagenum 12 def
+/fname (ps.txt) def
+/fdir (.) def
+/ftail (ps.txt) def
+% User defined strings:
+/fmodstr (Fri Mar 01 10:01:24 2013) def
+/pagenumstr (12) def
+/user_header_p false def
+/user_footer_p false def
+%%EndPageSetup
+do_header
+19.4 677 M
+(                               Naming is Better) s
+19.4 651 M
+(Another extension is to provide named patterns, analogous to Scheme's) s
+19.4 638 M
+(LETREC.) s
+19.4 612 M
+(Naming allows shorter, more modular patterns while also supporting) s
+19.4 599 M
+(recursive sub-patterns, including mutually recursive sub-patterns.) s
+19.4 573 M
+(For instance, the pattern:) s
+19.4 547 M
+(  \(?:pletrec \(\(odd-even-etc \(?:choice \(\) \(1 \(?:ref even-odd-etc\)\)\)\)) s
+19.4 534 M
+(              \(even-odd-etc \(?:choice \(\) \(2 \(?:ref odd-even-etc\)\)\)\)\)) s
+19.4 521 M
+(     \(?:ref odd-even-etc\)\)) s
+19.4 495 M
+(...should match all lists of the following form \(including the empty) s
+19.4 482 M
+(list\):) s
+19.4 456 M
+(  \(1 \(2 \(1 \(2 \(1 \(... \(\)\)...\)\)\)\)\)) s
+19.4 430 M
+(Here, ?:PLETREC introduces a block of mutually recursive pattern) s
+19.4 417 M
+(definitions while ?:REF dereferences a defined pattern in place \(in) s
+19.4 404 M
+(order to distinguish them from literal symbols like "a" and from) s
+19.4 391 M
+(pattern variables like "\(? x\)"\).) s
+19.4 365 M
+(In a proper environment-based LETREC-like implementation, nested) s
+19.4 352 M
+(?:PLETREC instances would introduce distinct contour lines for) s
+19.4 339 M
+(scoping.  You needn't worry about that here.  Specifically, just as) s
+19.4 326 M
+(pattern variables all share a common global namespace, so too can your) s
+19.4 313 M
+(pattern definitions.) s
+19.4 287 M
+(To wit, notice how the pattern combinators traverse the pattern and) s
+19.4 274 M
+(data in left-to-right depth first order, binding the first textual) s
+19.4 261 M
+(appearance of each distinct pattern variable \(like "\(? x\)"\) to its) s
+19.4 248 M
+(corresponding datum then treating each subsequent textual appearance) s
+19.4 235 M
+(in the pattern as a constraining instance.  This is achieved by) s
+19.4 222 M
+(threading the dictionary through the depth-first control path.  Pay) s
+19.4 209 M
+(particular attention to the appearance of NEW-DICTIONARY in the body) s
+19.4 196 M
+(of MATCH:LIST.) s
+19.4 170 M
+(This, in essence, decrees the leftmost, deepest instance of each) s
+19.4 157 M
+(unique pattern variable to be a defining instance in an implicit flat) s
+19.4 144 M
+(global namespace with all subsequent downstream appearances being) s
+19.4 131 M
+(constraining instances.) s
+19.4 105 M
+(Feel free to make PLETREC behave similarly rather than rewrite all the) s
+19.4 92 M
+(existing combinator interfaces to accept an extra PATTERN-ENVIRONMENT) s
+19.4 79 M
+(parameter, or whatever.) s
+_R
+S
+%%Page: (13) 13
+%%BeginPageSetup
+_S
+18 36 translate
+/pagenum 13 def
+/fname (ps.txt) def
+/fdir (.) def
+/ftail (ps.txt) def
+% User defined strings:
+/fmodstr (Fri Mar 01 10:01:24 2013) def
+/pagenumstr (13) def
+/user_header_p false def
+/user_footer_p false def
+%%EndPageSetup
+do_header
+19.4 677 M
+(-------------) s
+19.4 664 M
+(Problem 5.3) s
+19.4 638 M
+(Implement these new PLETREC and REF pattern schemata.  One approach is) s
+19.4 625 M
+(to implement new matcher procedures, match:pletrec and match:ref, then) s
+19.4 612 M
+(augment the pattern compiler appropriately.  Other approaches may also) s
+19.4 599 M
+(work.  Explain your approach briefly if it is subtle or non-obvious.) s
+19.4 573 M
+(As always, demonstrate your code on the examples provided and on a) s
+19.4 560 M
+(couple of your own, both positive and negative boundary cases.) s
+19.4 547 M
+(-------------) s
+19.4 495 M
+(                            Term Rewriting) s
+19.4 469 M
+(We extend our pattern matching system to build a primitive algebraic) s
+19.4 456 M
+(simplifier, based on pattern matching and instantiation.) s
+19.4 430 M
+(In rules.scm there are two elementary rule systems.  In our system a) s
+19.4 417 M
+(rule has two parts: a pattern to match a subexpression, and a) s
+19.4 404 M
+(consequent expression.  If the pattern matches, the consequent is) s
+19.4 391 M
+(evaluated and its result replaces the matched subexpression.) s
+19.4 365 M
+(The rules are assembled into a list and handed to the rule-simplifier) s
+19.4 352 M
+(procedure.  The result is a simplifier procedure that can be applied) s
+19.4 339 M
+(to an algebraic expression.) s
+19.4 313 M
+(The first rule system demonstrates only elementary features.  It does) s
+19.4 300 M
+(not use segment variables or restricted variables.  The first system) s
+19.4 287 M
+(has three rules: The first rule implements the associative law of) s
+19.4 274 M
+(addition, the second implements the commutative law of multiplication,) s
+19.4 261 M
+(and the third implements the distributive law of multiplication over) s
+19.4 248 M
+(addition.) s
+19.4 222 M
+(The commutative law looks like:) s
+19.4 196 M
+(      \(rule '\(* \(? b\) \(? a\)\)) s
+19.4 183 M
+(            \(and \(expr<? a b\)) s
+19.4 170 M
+(                 `\(* ,a ,b\)\)\)) s
+19.4 144 M
+(Notice the restriction predicate in the consequent of the rule for the) s
+19.4 131 M
+(commutative law.  If the consequent expression returns #f, that match) s
+19.4 118 M
+(is considered to have failed.  The system backtracks into the matcher) s
+19.4 105 M
+(to look for an alternative match; if none are forthcoming, the rule is) s
+19.4 92 M
+(not applicable.  In the commutative law the restriction predicate) s
+19.4 79 M
+(expr<? imposes an ordering on algebraic expressions.) s
+_R
+S
+%%Page: (14) 14
+%%BeginPageSetup
+_S
+18 36 translate
+/pagenum 14 def
+/fname (ps.txt) def
+/fdir (.) def
+/ftail (ps.txt) def
+% User defined strings:
+/fmodstr (Fri Mar 01 10:01:24 2013) def
+/pagenumstr (14) def
+/user_header_p false def
+/user_footer_p false def
+%%EndPageSetup
+do_header
+19.4 677 M
+(-------------) s
+19.4 664 M
+(Problem 5.4:) s
+19.4 638 M
+(Why is the \(expr<? a b\) restriction necessary in the commutative law?) s
+19.4 625 M
+(What would go wrong if the there was no restriction?) s
+19.4 612 M
+(-------------) s
+19.4 586 M
+(The second system of rules is far more interesting.  It is built with) s
+19.4 573 M
+(the assumption that addition and multiplication are n-ary operations:) s
+19.4 560 M
+(it needs segment variables to make this work.  It also uses variable) s
+19.4 547 M
+(restrictions to allow rules for simplifying numerical terms and) s
+19.4 534 M
+(prefactors.) s
+19.4 508 M
+(-------------) s
+19.4 495 M
+(Problem 5.5:) s
+19.4 469 M
+(In the second system how does the use of the ordering on expressions) s
+19.4 456 M
+(imposed by the commutative laws make the numerical simplification) s
+19.4 443 M
+(rules effective?) s
+19.4 417 M
+(Suppose that the commutative laws did not force an ordering, how would) s
+19.4 404 M
+(we have to write the numerical simplification rules?  Explain why) s
+19.4 391 M
+(numerical simplification would become very expensive.) s
+19.4 378 M
+(-------------) s
+19.4 352 M
+(-------------) s
+19.4 339 M
+(Problem 5.6:) s
+19.4 313 M
+(The ordering in the commutative laws evolves an n^2 bubble sort on the) s
+19.4 300 M
+(terms of a sum and the factors of a product.  This can get pretty bad) s
+19.4 287 M
+(if there are many terms, as in a serious algebra problem.  Is there) s
+19.4 274 M
+(some way in this system to make a more efficient sort?  If not, why) s
+19.4 261 M
+(not?  If so, how would you arrange it?) s
+19.4 248 M
+(-------------) s
+19.4 222 M
+(-------------) s
+19.4 209 M
+(Problem 5.7:) s
+19.4 183 M
+(The system we have described does not collect like terms.  For example:) s
+19.4 157 M
+(\(algebra-2 '\(+ \(* 4 x\) \(* 3 x\)\)\)) s
+19.4 144 M
+(;Value \(+ \(* 3 x\) \(* 4 x\)\)) s
+19.4 118 M
+(Add rules that cause the collection of like terms, leaving the result) s
+19.4 105 M
+(as a sum of terms.  Demonstrate your solution.  Your solution must be) s
+19.4 92 M
+(able to handle problems like:) s
+19.4 66 M
+(\(algebra-3) s
+19.4 53 M
+(  '\(+ y \(* x -2 w\) \(* x 4 y\) \(* w x\) z \(* 5 z\) \(* x w\) \(* x y 3\)\)\)) s
+19.4 40 M
+(;Value: \(+ y \(* 6 z\) \(* 7 x y\)\)) s
+19.4 27 M
+(-------------) s
+_R
+S
+%%Page: (15) 15
+%%BeginPageSetup
+_S
+18 36 translate
+/pagenum 15 def
+/fname (ps.txt) def
+/fdir (.) def
+/ftail (ps.txt) def
+% User defined strings:
+/fmodstr (Fri Mar 01 10:01:24 2013) def
+/pagenumstr (15) def
+/user_header_p false def
+/user_footer_p false def
+%%EndPageSetup
+do_header
+19.4 677 M
+(Now that we have some experience with the use of such a rule system,) s
+19.4 664 M
+(let's dive in to see how it works.  The center of the system is in) s
+19.4 651 M
+(pattern-directed-invocation.scm.) s
+19.4 625 M
+(A rule is a procedure that matches a pattern against its argument.  If) s
+19.4 612 M
+(the match succeeds, it executes the consequent in an environment where) s
+19.4 599 M
+(the pattern variables are bound to their matched data.  Rule) s
+19.4 586 M
+(procedures normally take succeed and fail continuations that can be) s
+19.4 573 M
+(used to backtrack into the consequent or match of a rule.  For ease of) s
+19.4 560 M
+(testing rules, these continuations are optional, and reasonable) s
+19.4 547 M
+(defaults are supplied.) s
+19.4 521 M
+(Two interesting procedures use rules.  The rule-simplifier procedure) s
+19.4 508 M
+(is a simple recursive simplifier constructor.  It produces a) s
+19.4 495 M
+(procedure, simplify-expression, that takes an expression and uses the) s
+19.4 482 M
+(rules to simplify the expression.  It recursively simplifies all the) s
+19.4 469 M
+(subexpressions of an expression, and then applies the rules to) s
+19.4 456 M
+(simplify the resulting expression.  It does this repeatedly until the) s
+19.4 443 M
+(process converges and the expression returned is a fixed point of the) s
+19.4 430 M
+(simplification process.) s
+19.4 404 M
+(      \(define \(rule-simplifier the-rules\)) s
+19.4 391 M
+(        \(define \(simplify-expression expression\)) s
+19.4 378 M
+(          \(let \(\(subexpressions-simplified) s
+19.4 365 M
+(                 \(if \(list? expression\)) s
+19.4 352 M
+(                     \(map simplify-expression expression\)) s
+19.4 339 M
+(                     expression\)\)\)) s
+19.4 326 M
+(            \(try-rules subexpressions-simplified the-rules) s
+19.4 313 M
+(             \(lambda \(result fail\)) s
+19.4 300 M
+(               \(simplify-expression result\)\)) s
+19.4 287 M
+(             \(lambda \(\)) s
+19.4 274 M
+(               subexpressions-simplified\)\)\)\)) s
+19.4 261 M
+(        simplify-expression\)) s
+19.4 235 M
+(The procedure try-rules just scans the list of rules, sequencing) s
+19.4 222 M
+(the scan through the succeed and fail continuations.) s
+19.4 196 M
+(      \(define \(try-rules data rules succeed fail\)) s
+19.4 183 M
+(        \(let per-rule \(\(rules rules\)\)) s
+19.4 170 M
+(          \(if \(null? rules\)) s
+19.4 157 M
+(              \(fail\)) s
+19.4 144 M
+(              \(\(car rules\) data succeed) s
+19.4 131 M
+(               \(lambda \(\)) s
+19.4 118 M
+(                 \(per-rule \(cdr rules\)\)\)\)\)\)\)) s
+_R
+S
+%%Page: (16) 16
+%%BeginPageSetup
+_S
+18 36 translate
+/pagenum 16 def
+/fname (ps.txt) def
+/fdir (.) def
+/ftail (ps.txt) def
+% User defined strings:
+/fmodstr (Fri Mar 01 10:01:24 2013) def
+/pagenumstr (16) def
+/user_header_p false def
+/user_footer_p false def
+%%EndPageSetup
+do_header
+19.4 677 M
+(Another mechanism that uses rules \(and try-rules\) is an extension of) s
+19.4 664 M
+(the generic operation idea to pattern-directed operators.  The) s
+19.4 651 M
+(make-pattern-operator procedure is analagous to make-generic-operator;) s
+19.4 638 M
+(it is an entity to allow the operator to be extended with additional) s
+19.4 625 M
+(rules dynamically \(by attach-rule!, which is analagous to defhandler\).) s
+19.4 599 M
+(      \(define \(make-pattern-operator #!optional rules\)) s
+19.4 586 M
+(        \(define \(operator self . arguments\)) s
+19.4 573 M
+(          \(define \(succeed value fail\) value\)) s
+19.4 560 M
+(          \(define \(fail\)) s
+19.4 547 M
+(            \(error "No applicable operations" self arguments\)\)) s
+19.4 534 M
+(          \(try-rules arguments \(entity-extra self\) succeed fail\)\)) s
+19.4 521 M
+(        \(make-entity operator \(if \(default-object? rules\) '\(\) rules\)\)\)) s
+19.4 495 M
+(      \(define \(attach-rule! operator rule\)) s
+19.4 482 M
+(        \(set-entity-extra! operator) s
+19.4 469 M
+(         \(cons rule \(entity-extra operator\)\)\)\)) s
+19.4 443 M
+(Generic operations systems usually have no name for the analogue to) s
+19.4 430 M
+(our rules.  That analogue is the generic method, together with the set) s
+19.4 417 M
+(of types or predicates that determine the parameters to which the) s
+19.4 404 M
+(method is applicable.  Since the applicability testing and) s
+19.4 391 M
+(destructuring portions of a generic operations system are usually very) s
+19.4 378 M
+(predictable, there is less value to having that coupled object be) s
+19.4 365 M
+(manipulable in its own right.) s
+19.4 339 M
+(A rule is made by compiling its pattern into an appropriate) s
+19.4 326 M
+(combinator pile, coercing its handler into combinator of a) s
+19.4 313 M
+(compatible shape, and hooking them together in sequence.) s
+19.4 287 M
+(      \(define \(make-rule pattern handler\)) s
+19.4 274 M
+(        \(if \(user-handler? handler\)) s
+19.4 261 M
+(            \(make-rule pattern \(user-handler->system-handler handler\)\)) s
+19.4 248 M
+(            \(let \(\(pattern-combinator \(->combinators pattern\)\)\)) s
+19.4 235 M
+(              \(lambda \(data #!optional succeed fail\)) s
+19.4 222 M
+(                \(if \(default-object? succeed\)) s
+19.4 209 M
+(                    \(set! succeed \(lambda \(value fail\) value\)\)\)) s
+19.4 196 M
+(                \(if \(default-object? fail\)) s
+19.4 183 M
+(                    \(set! fail \(lambda \(\) #f\)\)\)) s
+19.4 170 M
+(                \(pattern-combinator data) s
+19.4 157 M
+(                 \(lambda \(dict fail\) \(handler dict succeed fail\)\)) s
+19.4 144 M
+(                 fail\)\)\)\)\)) s
+_R
+S
+%%Page: (17) 17
+%%BeginPageSetup
+_S
+18 36 translate
+/pagenum 17 def
+/fname (ps.txt) def
+/fdir (.) def
+/ftail (ps.txt) def
+% User defined strings:
+/fmodstr (Fri Mar 01 10:01:24 2013) def
+/pagenumstr (17) def
+/user_header_p false def
+/user_footer_p false def
+%%EndPageSetup
+do_header
+19.4 677 M
+(For example, the commutative law rule at the beginning of this problem) s
+19.4 664 M
+(set can be made directly with make-rule thus:) s
+19.4 638 M
+(      \(make-rule '\(* \(? a\) \(? b\)\)) s
+19.4 625 M
+(       \(lambda \(a b\)) s
+19.4 612 M
+(         \(and \(expr<? a b\)) s
+19.4 599 M
+(              `\(* ,a ,b\)\)\)\)) s
+19.4 573 M
+(Note that the handler \(lambda \(a b\) ...\) needs to extract the) s
+19.4 560 M
+(variables named a and b from the dictionary produced by the matcher) s
+19.4 547 M
+(combinator built out of the pattern '\(* \(? a\) \(? b\)\).  This is) s
+19.4 534 M
+(arranged by the procedure user-handler->system-handler in) s
+19.4 521 M
+(pattern-directed-invocation.scm.) s
+19.4 391 M
+(                           Magic Macrology) s
+19.4 365 M
+(Compare the rule definition given at the beginning of this) s
+19.4 352 M
+(probelm set:) s
+19.4 326 M
+(      \(rule '\(* \(? b\) \(? a\)\)) s
+19.4 313 M
+(            \(and \(expr<? a b\)) s
+19.4 300 M
+(                 `\(* ,a ,b\)\)\)) s
+19.4 274 M
+(with what make-rule demands of us:) s
+19.4 248 M
+(      \(make-rule '\(* \(? a\) \(? b\)\)) s
+19.4 235 M
+(       \(lambda \(a b\)) s
+19.4 222 M
+(         \(and \(expr<? a b\)) s
+19.4 209 M
+(              `\(* ,a ,b\)\)\)\)) s
+19.4 183 M
+(The names a and b are repeated: the occur both in the pattern and in) s
+19.4 170 M
+(the parameter list of the handler.  This is both obnoxious to write) s
+19.4 157 M
+(and error-prone \(one sign of good taste is when those two things) s
+19.4 144 M
+(coincide!\), because we must remember to repeat the names, and we can) s
+19.4 131 M
+(make a mistake if we repeat them wrong.) s
+_R
+S
+%%Page: (18) 18
+%%BeginPageSetup
+_S
+18 36 translate
+/pagenum 18 def
+/fname (ps.txt) def
+/fdir (.) def
+/ftail (ps.txt) def
+% User defined strings:
+/fmodstr (Fri Mar 01 10:01:24 2013) def
+/pagenumstr (18) def
+/user_header_p false def
+/user_footer_p false def
+%%EndPageSetup
+do_header
+19.4 677 M
+(This is a case for syntactic abstraction, otherwise known as a macro.) s
+19.4 664 M
+(The following rather magical object does what we want:) s
+19.4 638 M
+(      \(define-syntax rule) s
+19.4 625 M
+(        \(sc-macro-transformer) s
+19.4 612 M
+(         \(lambda \(form use-env\)) s
+19.4 599 M
+(           \(let \(\(pattern \(cadr form\)\)) s
+19.4 586 M
+(                 \(handler-body \(caddr form\)\)\)) s
+19.4 573 M
+(             `\(make-rule ) s
+19.4 560 M
+(               ,\(close-syntax pattern use-env\)) s
+19.4 547 M
+(               ,\(compile-handler handler-body use-env) s
+19.4 534 M
+(                                 \(match:pattern-names pattern\)\)\)\)\)\)\)) s
+19.4 508 M
+(      \(define \(compile-handler form env names\)) s
+19.4 495 M
+(        ;; See magic in utils.scm) s
+19.4 482 M
+(        \(make-lambda names env) s
+19.4 469 M
+(          \(lambda \(env*\) \(close-syntax form env*\)\)\)\)) s
+19.4 443 M
+(We can at least partially check this macro with the following magic) s
+19.4 430 M
+(incantation:) s
+19.4 404 M
+(      \(pp \(syntax '\(rule '\(* \(? a\) \(? b\)\)) s
+19.4 391 M
+(                         \(and \(expr<? a b\)) s
+19.4 378 M
+(                              `\(* ,a ,b\)\)\)) s
+19.4 365 M
+(                  \(the-environment\)\)\)) s
+19.4 352 M
+(  ==>) s
+19.4 339 M
+(      \(make-rule '\(* \(? a\) \(? b\)\)) s
+19.4 326 M
+(                 \(lambda \(b a\) \(and \(expr<? a b\) \(list '* a b\)\)\)\)) s
+19.4 300 M
+(We see that the rule expands into a call to make-rule with the pattern) s
+19.4 287 M
+(and its handler procedure.  This is the expression that is evaluated) s
+19.4 274 M
+(to make the rule.  In more conventional languages macros expand) s
+19.4 261 M
+(directly into code that is substituted for the macro call.  However) s
+19.4 248 M
+(this process is not referentially transparent, because the macro) s
+19.4 235 M
+(expansion may use symbols that conflict with the user's symbols.  In) s
+19.4 222 M
+(Scheme we try to avoid this problem, allowing a user to write) s
+19.4 209 M
+("hygienic macros" that cannot cause conflicts.  However this is a bit) s
+19.4 196 M
+(more complicated than just substituting one expression for another.) s
+19.4 183 M
+(We will not try to explain the problems or the solutions here, but we) s
+19.4 170 M
+(will just use the solutions described in the MIT Scheme reference) s
+19.4 157 M
+(manual, section 2.11.) s
+_R
+S
+%%Page: (19) 19
+%%BeginPageSetup
+_S
+18 36 translate
+/pagenum 19 def
+/fname (ps.txt) def
+/fdir (.) def
+/ftail (ps.txt) def
+% User defined strings:
+/fmodstr (Fri Mar 01 10:01:24 2013) def
+/pagenumstr (19) def
+/user_header_p false def
+/user_footer_p false def
+%%EndPageSetup
+do_header
+19.4 677 M
+(                         A Potential Project) s
+19.4 651 M
+(The matcher we have is still not a complete language, in that it does) s
+19.4 638 M
+(not support namespace scoping and parametric patterns.  For example,) s
+19.4 625 M
+(we cannot write the following pattern, even though it is obvious what) s
+19.4 612 M
+(it means:) s
+19.4 586 M
+(     \(?:pletrec \(\(palindrome) s
+19.4 573 M
+(                  \(?:pnew \(x\)) s
+19.4 560 M
+(                    \(?:choice \(\)) s
+19.4 547 M
+(                              \(\(? x ,symbol?\)) s
+19.4 534 M
+(                               \(?:ref palindrome\)) s
+19.4 521 M
+(                               \(? x\)\)\)\)\)\)) s
+19.4 508 M
+(         \(?:ref palindrome\)\)) s
+19.4 482 M
+(This pattern is intended to match only lists of symbols that are) s
+19.4 469 M
+(palindromes.  For this to work in any reasonable way ?:pnew creates) s
+19.4 456 M
+(fresh lexically-scoped pattern variables that can be referred to only) s
+19.4 443 M
+(in the body of the ?:pnew.) s
+19.4 417 M
+(A fully-worked out pattern language is a neat subsystem to have, but) s
+19.4 404 M
+(it is not entirely trivial to build.  There are also "semantic) s
+19.4 391 M
+(matchers" that know something about the constants in a data item.  One) s
+19.4 378 M
+(possible nice project is to flesh out these ideas and produce a full) s
+19.4 365 M
+(pattern language.) s
+_R
+S
+%%Trailer
+%%Pages: 19
+%%DocumentNeededResources: font Courier-Bold Courier 
+%%EOF
