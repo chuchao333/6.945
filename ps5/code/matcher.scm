@@ -127,7 +127,7 @@
   (define (choice-match data dictionary succeed)
     (let lp ((matchers match-combinators))
       (define (try-element submatcher)
-	(submatcher (car data) dictionary
+	(submatcher data dictionary
 		    (lambda (new-dictionary)
 		      (succeed new-dictionary 1))))
       (define (try-segment submatcher)
@@ -145,14 +145,50 @@
 		     (try-segment (car matchers)))
 		    ((list-matcher? (car matchers))
 		     (try-list (car matchers)))
-		    (else (and (pair? data) (try-element (car matchers)))))
+		    (else (try-element (car matchers))))
 		 (lp (cdr matchers))))
 	    (else #f))))
   (choice-matcher! choice-match)
-  choice-match)
-;  (lambda (data dictionary succeed)
-;    (choice-match data dictionary (lambda (dictionary n)
-;				    (succeed dictionary)))))
+;  choice-match)
+  (lambda (data dictionary succeed)
+    (choice-match data dictionary (lambda (dictionary n)
+				    (succeed dictionary)))))
+
+(define (match:pletrec named_patterns pattern)
+  (let ((dict '())
+	(matcher (match:->combinators pattern)))
+    (for-each (lambda (pattern)
+		(set! dict (match:bind (car pattern)
+				       (match:->combinators (cadr pattern))
+				       dict)))
+	      named_patterns)
+    (define (pletrec-match data dictionary succeed)
+      (define (succeed2 new-dictionary n)
+	    (if (> n (length data))
+		(error "Matcher ate too much." n))
+	    (succeed new-dictionary))
+      (bkpt 'ah 'ha)
+      (if (segment-matcher? matcher)
+	  (matcher data (append dict dictionary) succeed2)
+	  (matcher data (append dict dictionary) succeed)))
+  pletrec-match))
+
+(define (match:ref name)
+  (define (ref-match data dictionary succeed)
+    (define (succeed2 new-dictionary n)
+      (if (> n (length data))
+	  (error "Matcher ate too much." n))
+      (succeed new-dictionary))
+    (let ((entry (match:lookup name dictionary)))
+      (bkpt 'ha 'ha)
+      (if entry
+	  (let ((matcher (match:value entry)))
+	    (if (segment-matcher? matcher)
+		(matcher data dictionary succeed2)
+		(matcher data dictionary succeed)))
+	  (error "ref not found" name))))
+  ref-match)
+
 
 ;;; Sticky notes
 
@@ -185,13 +221,23 @@
   (and (pair? pattern)
        (eq? (car pattern) '?:choice)))
 
-(define (match:variable-name pattern) (cadr pattern))
-(define (match:restrictions pattern) (cddr pattern))
+(define (match:pletrec? pattern)
+  (and (pair? pattern)
+       (eq? (car pattern) '?:pletrec)))
+
+(define (match:ref? pattern)
+  (and (pair? pattern)
+       (eq? (car pattern) '?:ref)))
 
 (define (match:list? pattern)
   (and (list? pattern)
        (or (null? pattern)
-	   (not (memq (car pattern) '(? ?? ?:choice))))))
+	   (not (any (lambda (pred) (pred pattern))
+		     (list match:element? match:segment? match:choice?
+				      match:pletrec? match:ref?))))))
+
+(define (match:variable-name pattern) (cadr pattern))
+(define (match:restrictions pattern) (cddr pattern))
 
 (define match:->combinators
   (make-generic-operator 1 'eqv match:eqv))
@@ -217,11 +263,21 @@
     (apply match:choice (map match:->combinators pattern)))
   match:choice?)
 
+(defhandler match:->combinators
+  (lambda (pattern)
+    (match:pletrec (cadr pattern) (caddr pattern)))
+  match:pletrec?)
+
+(defhandler match:->combinators
+  (lambda (pattern) (match:ref (cadr pattern)))
+  match:ref?)
+
 (define (matcher pattern)
   (let ((match-combinator (match:->combinators pattern)))
     (lambda (datum)
       (match-combinator datum '()
        (lambda (dictionary) dictionary)))))
+
 
 #|
  ((match:->combinators '(a ((? b) 2 3) 1 c))
