@@ -19,8 +19,8 @@
 ; Value: (succeed ())
 ((match:->combinators '(?:choice a b)) 'z '() (lambda (d) `(succeed ,d)))
 ; Value: #f
-((match:->combinators '(a (?:choice (? x) b (?? y)) (?? x) (?:choice c (? x) )))
- '(a b b c) '() (lambda (dict) (pp `(succeed ,dict)) #f))
+;; test list with choices
+((match:->combinators '(a (?:choice (? x) b (?? y)) (?? x) (?:choice c (? x) ))) '(a b b c) '() (lambda (dict) (pp `(succeed ,dict)) #f))
 ; (succeed ((x (b))))
 ; (succeed ((x (b c))))
 ; (succeed ((x (b b)) (y ())))
@@ -31,5 +31,8 @@
 ; (succeed ((x (c)) (y (b b))))
 ; (succeed ((x ()) (y (b b c))))
 ; Value: #f
-((match:->combinators '(?:choice (a (?? y) (?:choice c (? x))) ((?:choice (? x) b) b (?? y)))) '(a b b c) '() (lambda (dict) (pp `(succeed ,dict)) #f))
-((match:->combinators '(?:choice (a (?? y) c) (?? y))) '(a b b c) '() (lambda (dict) (pp `(succeed ,dict)) #f))
+;; test choice of lists
+((match:->combinators '(?:choice (a (?? x) c) ((? x) (?? y) c))) '(a b b c) '() (lambda (dict n) (pp `(succeed ,dict)) #f))
+; (succeed ((x (b b))))
+; (succeed ((y (b b)) (x a)))
+; Value: #f
