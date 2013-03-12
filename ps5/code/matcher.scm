@@ -104,15 +104,55 @@
 	    (if (> n (length data))
 		(error "Matcher ate too much." n))
 	    (lp (list-tail data n) (cdr matchers) new-dictionary))))
+      (define (try-choice submatcher)
+	(submatcher data dictionary
+          (lambda (new-dictionary n)
+	    (if (> n (length data))
+		(error "choice ate too much." n))
+	    (lp (list-tail data n) (cdr matchers) new-dictionary))))
       (cond ((pair? matchers)
-	     (if (segment-matcher? (car matchers))
-		 (try-segment (car matchers))
-		 (and (pair? data) (try-element (car matchers)))))
+	     (cond ((segment-matcher? (car matchers))
+		    (try-segment (car matchers)))
+		   ((choice-matcher? (car matchers))
+		    (try-choice (car matchers)))
+		   (else (and (pair? data) (try-element (car matchers))))))
 	    ((pair? data) #f)
 	    ((null? data)
 	     (succeed dictionary))
 	    (else #f))))
+  (list-matcher! list-match)
   list-match)
+
+(define (match:choice . match-combinators)
+  (define (choice-match data dictionary succeed)
+    (let lp ((matchers match-combinators))
+      (define (try-element submatcher)
+	(submatcher (car data) dictionary
+		    (lambda (new-dictionary)
+		      (succeed new-dictionary 1))))
+      (define (try-segment submatcher)
+	(submatcher data dictionary succeed))
+      (define (try-list submatcher)
+	(let ((n (length data)))
+	  (submatcher data dictionary
+		      (lambda (new-dictionary)
+			(succeed new-dictionary n)))))
+      (cond ((null? matchers) #f)
+	    ((null? data) (succeed dictionary 0))
+	    ((pair? matchers)
+	     (or
+	      (cond ((segment-matcher? (car matchers))
+		     (try-segment (car matchers)))
+		    ((list-matcher? (car matchers))
+		     (try-list (car matchers)))
+		    (else (and (pair? data) (try-element (car matchers)))))
+		 (lp (cdr matchers))))
+	    (else #f))))
+  (choice-matcher! choice-match)
+  choice-match)
+;  (lambda (data dictionary succeed)
+;    (choice-match data dictionary (lambda (dictionary n)
+;				    (succeed dictionary)))))
 
 ;;; Sticky notes
 
@@ -120,6 +160,16 @@
   (eq-put! thing 'segment-matcher #t))
 (define (segment-matcher? thing)
   (eq-get thing 'segment-matcher))
+
+(define (list-matcher! thing)
+  (eq-put! thing 'list-matcher #t))
+(define (list-matcher? thing)
+  (eq-get thing 'list-matcher))
+
+(define (choice-matcher! thing)
+  (eq-put! thing 'choice-matcher #t))
+(define (choice-matcher? thing)
+  (eq-get thing 'choice-matcher))
 
 ;;; Syntax of matching is determined here.
 
@@ -131,13 +181,17 @@
   (and (pair? pattern)
        (eq? (car pattern) '??)))
 
+(define (match:choice? pattern)
+  (and (pair? pattern)
+       (eq? (car pattern) '?:choice)))
+
 (define (match:variable-name pattern) (cadr pattern))
 (define (match:restrictions pattern) (cddr pattern))
 
 (define (match:list? pattern)
   (and (list? pattern)
        (or (null? pattern)
-	   (not (memq (car pattern) '(? ??))))))
+	   (not (memq (car pattern) '(? ?? ?:choice))))))
 
 (define match:->combinators
   (make-generic-operator 1 'eqv match:eqv))
@@ -157,6 +211,11 @@
   (lambda (pattern)
     (apply match:list (map match:->combinators pattern)))
   match:list?)
+
+(defhandler match:->combinators
+  (lambda (pattern)
+    (apply match:choice (map match:->combinators pattern)))
+  match:choice?)
 
 (define (matcher pattern)
   (let ((match-combinator (match:->combinators pattern)))

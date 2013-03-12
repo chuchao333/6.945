@@ -1,0 +1,14 @@
+Owen Derby
+6.945 PS5
+3/13/13
+
+5.1: The provided success function always returns #f, after printing out the
+     current dictionary of assignments. The subcalls to match:segment for the
+     variables x and y from match:list will only succeed (and call the provided
+     success function) if all the free 'b values are consumed in the
+     pattern. Further, because of the or in the match segment, when the first
+     success (x consumes none, y consumes all) returns a #f value (because we
+     gave a success function which always returns #f), it will continue on and
+     try having x consume 1 'b, and so on and so forth until all possible
+     choices for x are exhausted, at which case match:list gives up and returns
+     #f.
