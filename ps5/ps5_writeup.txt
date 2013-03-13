@@ -29,4 +29,15 @@ Owen Derby
      entire sub-expressions. This would change the copmlexity of simplifying
      numerical expressions from being O(n) to O(n^2).
 
-5.6:
+5.6: There are better sorting algorithms than bubble sort, which achieve nlogn
+     time. However, it does not appear to be feasible to implement something
+     like merge sort, or any other different sorting algorithm in the current
+     framework, since they all have notions of intentionally moving elements to
+     locations or merging more than 2 elements. However, we could see some
+     improvements to our bubble-sort running time by "unrolling" the
+     comparison. That is, we could add a rule for cummuting 3, or even 4
+     elements, instead of only two. We'd still need to keep the 2 element
+     cummutating, but if we could arrange it so that we mostly used the 3
+     element rule, we'd cut down on the number of passes the sort takes
+     (although we'd still need the same number of comparisons, so it's unclear
+     just how much this would gain us).
