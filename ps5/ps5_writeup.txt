@@ -12,3 +12,21 @@ Owen Derby
      try having x consume 1 'b, and so on and so forth until all possible
      choices for x are exhausted, at which case match:list gives up and returns
      #f.
+
+5.4: This restriction ensures that we only apply the commutative law at most
+     once per candidate multiplication expression. Otherwise we would enter an
+     infinite loop of expression simplifying, in which we repeatedly swapped the
+     order in which we multiplied expressions.
+
+5.5: The use of the ordering makes applying the simplification rules a minimally
+     expensive task. Since we know that all numbers will be the first entries in
+     any (sub) expression, we can just repeatedly look to simplify pairs of
+     numbers at the beginning of any expression. Finally, we can check to
+     simplify identity operations. If we didn't impose this sort of ordering,
+     not only would we need to figure out a way to avoid repeatedly swapping the
+     orderings of expressions, we would need to implement a way for the
+     numerical simplification rules to search for pairs of numbers throughout
+     entire sub-expressions. This would change the copmlexity of simplifying
+     numerical expressions from being O(n) to O(n^2).
+
+5.6:

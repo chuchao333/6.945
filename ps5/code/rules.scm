@@ -64,7 +64,7 @@
     (rule `(+ (?? a) (? y) (? x) (?? b))
 	  (and (expr<? x y)
 	       `(+ ,@a ,x ,y ,@b)))
-    
+
 
     ;; Products
 
@@ -93,11 +93,33 @@
 
 
     (rule `(* 0 (?? x)) 0)
-     
+
     (rule `(* 1 (?? x)) `(* ,@x))
 
     (rule `(* (? x ,number?) (? y ,number?) (?? z))
 	  `(* ,(* x y) ,@z))
+
+    ;; Collect like terms
+
+    ; x+x => 2x
+    (rule `(+ (?? a) (? x ,symbol?) (? x) (?? c))
+	  `(+ ,@a (* 2 ,x) ,@c))
+
+    ; x+2x => 3x
+    (rule `(+ (?? a) (? x ,symbol?) (?? b) (* (? y ,number?) (? x ,symbol?)) (?? c))
+	  `(+ ,@a ,@b (* ,(+ 1 y) ,x) ,@c))
+
+    ; xy+xy => 2xy
+    (rule `(+ (?? a) (* (? x ,symbol?) (?? w)) (* (? x) (?? w)) (?? c))
+	  `(+ ,@a (* 2 ,x ,@w) ,@c))
+
+    ; xy+2xy => 3xy
+    (rule `(+ (?? a) (* (? x ,symbol?) (?? w)) (* (? y ,number?) (? x) (?? w)) (?? c))
+	  `(+ ,@a (* ,(+ 1 y) ,x ,@w) ,@c))
+
+    ; 2x+3x = > 5x
+    (rule `(+ (?? a) (* (? y ,number?) (?? x)) (* (? z ,number?) (?? x)) (?? c))
+	  `(+ ,@a (* ,(+ y z) ,@x) ,@c))
 
     )))
 
