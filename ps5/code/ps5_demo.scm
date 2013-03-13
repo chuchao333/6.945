@@ -39,17 +39,18 @@
 ((match:->combinators '(?:choice a b (? x) c)) 'z '() (lambda (d) `(succeed ,d)))
 
 ;;; Problem 5.3
-
 ((match:->combinators '(?:pletrec () (?:choice a b (? x) c))) 'z '() (lambda (d) `(succeed ,d)))
-
-((match:->combinators '(?? x)) '(a a) '() (lambda (dict n) (pp `(succeed ,dict)) #f))
-
-((match:->combinators '(?:pletrec ((foo (?? x))) (?:ref foo))) '(a a) '() (lambda (dict) (pp `(succeed ,dict)) #f))
-
+; (succeed ((x z)))
 ((match:->combinators '(?:pletrec ((foo (?? x)) (bar (?? y))) (?:choice (?:ref foo) (?:ref bar)))) '(a a) '() (lambda (dict) (pp `(succeed ,dict)) #f))
+; (succeed ((x ())))
+; (succeed ((x (a))))
+; (succeed ((x (a a))))
+; (succeed ((y ())))
+; (succeed ((y (a))))
+; (succeed ((y (a a))))
+; Value: #f
 
 ((match:->combinators '(?:pletrec ((odd-even-etc (?:choice () (1 (?:ref even-odd-etc))))
 				   (even-odd-etc (?:choice () (2 (?:ref odd-even-etc)))))
-				  (?:ref odd-even-etc)))
- '(1 (2 (1 (2 (1 ())))))
- (lambda (d) `(succeed ,d)))
+				  (?:ref odd-even-etc)))  '(1 (2 (1 (2 (1 ()))))) '() (lambda (d) `(succeed ,d)))
+; (succeed ())
