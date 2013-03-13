@@ -104,18 +104,12 @@
 	    (if (> n (length data))
 		(error "Matcher ate too much." n))
 	    (lp (list-tail data n) (cdr matchers) new-dictionary))))
-      (define (try-choice submatcher)
-	(submatcher data dictionary
-          (lambda (new-dictionary n)
-	    (if (> n (length data))
-		(error "choice ate too much." n))
-	    (lp (list-tail data n) (cdr matchers) new-dictionary))))
       (cond ((pair? matchers)
-	     (cond ((segment-matcher? (car matchers))
-		    (try-segment (car matchers)))
-		   ((choice-matcher? (car matchers))
-		    (try-choice (car matchers)))
-		   (else (and (pair? data) (try-element (car matchers))))))
+	     (if (or (segment-matcher? (car matchers))
+		     ; treat match:choice as a segment
+		     (choice-matcher? (car matchers)))
+		 (try-segment (car matchers))
+		 (and (pair? data) (try-element (car matchers)))))
 	    ((pair? data) #f)
 	    ((null? data)
 	     (succeed dictionary))
@@ -123,6 +117,7 @@
   (list-matcher! list-match)
   list-match)
 
+; problem 5.2
 (define (match:choice . match-combinators)
   (define (choice-match data dictionary succeed)
     (let lp ((matchers match-combinators))
@@ -149,11 +144,11 @@
 		 (lp (cdr matchers))))
 	    (else #f))))
   (choice-matcher! choice-match)
-;  choice-match)
   (lambda (data dictionary succeed)
     (choice-match data dictionary (lambda (dictionary n)
 				    (succeed dictionary)))))
 
+;Problem 5.3
 (define (match:pletrec named_patterns pattern)
   (let ((dict '())
 	(matcher (match:->combinators pattern)))
@@ -180,6 +175,7 @@
 	  (matcher data (append dict dictionary) succeed1)))
   pletrec-match))
 
+; Problem 5.3
 (define (match:ref name)
   (define (ref-match data dictionary succeed)
     (define (succeed2 new-dictionary n)
@@ -194,7 +190,6 @@
 		(matcher data dictionary succeed)))
 	  (error "ref not found" name))))
   ref-match)
-
 
 ;;; Sticky notes
 
