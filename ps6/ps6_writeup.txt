@@ -5,6 +5,8 @@ Owen Derby
 Problem 6.1: Lorna's father is Colonel Downing. There are 3 possible solutions
 	if we don't know Mary Ann's father.
 
+Problem 6.2B: I just printed on each subtree examined, and printed the phrase
+	'exit when the program should have exited.
 
 Problem 6.3: The difference arises from the order in which the two searches try
 	alternatives. For this particular case, the answer is found sooner by
@@ -15,3 +17,15 @@ Problem 6.3: The difference arises from the order in which the two searches try
 	doesn't terminate, and so has infinite depth. It will spend forever
 	trying to add all the possible values for i before ever moving onto
 	setting values for j.
+
+Problem 6.4A: An unordered AMB would be useful in implementing a stochastic
+	search. For simplicity, I implemented a test that flips a coin n times.
+
+
+Problem 6.5: The within-continuation only escapes local bindings of the current
+	continuation, but not assignments in the global scope. Thus, the
+	assignments to x, y, and z are "sticky", in that the last value assigned
+	to them sticks, even though the continuation was defined with a
+	different value for them. By comparison, in AX 1.b, the values are only
+	defined locally and so they are escaped by the within-continuation
+	invocation.

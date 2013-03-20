@@ -7,7 +7,7 @@
     stack&queue?
   (front stack&queue-front set-stack&queue-front!)
   (back stack&queue-back set-stack&queue-back!))
-  
+
 
 (define (make-stack&queue)
   (%make-stack&queue '() '()))
@@ -48,5 +48,35 @@
 	  (set-stack&queue-back! stq '())))
     (car next)))
 
+(define (pop-right! stq)
+  (if (stack&queue-empty? stq)
+      (error "Empty stack&queue -- POP"))
+  (let ((ret (stack&queue-back stq))
+	(rest (except-last-pair (stack&queue-front stq))))
+    (if (pair? rest)
+	(begin
+	  (set-stack&queue-front! stq rest)
+	  (set-stack&queue-back! stq (last-pair rest)))
+	(begin
+	  (set-stack&queue-front! stq '())
+	  (set-stack&queue-back! stq '())))
+    (car ret)))
 
-
+(define (pop-random! stq)
+  (if (stack&queue-empty? stq)
+      (error "Empty stack&queue -- POP"))
+  (define (stq-len sstq)
+    (length (stack&queue-front sstq)))
+  (let* ((n (stq-len stq))
+	(i (random n))
+	(front (stack&queue-front stq))
+	(ret (list-ref front i))
+	(rest (append (list-head front i) (list-tail front (+ i 1)))))
+    (if (pair? rest)
+	(begin
+	  (set-stack&queue-front! stq rest)
+	  (set-stack&queue-back! stq (last-pair rest)))
+	(begin
+	  (set-stack&queue-front! stq '())
+	  (set-stack&queue-back! stq '())))
+    ret))

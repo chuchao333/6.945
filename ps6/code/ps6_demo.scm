@@ -43,7 +43,7 @@
 ;(with-depth-first-schedule yacht-club)
 ;Value: ((moore_daughter 1) (hood_daughter 5) (downing_daughter 3) (hall_daughter 2) (parker_daughter 4))
 
-;;; Problem 6.2
+;;; Problem 6.2A
 (define (snark-hunt tree)
   (call-with-current-continuation
    (lambda (t_exit)
@@ -57,3 +57,98 @@
 ; Value: #t
 ;(snark-hunt '(((a b c) d (e f)) g (((snak . "oops") h) (i . j))))
 ; Value: #f
+
+;;; Problem 6.2B
+(define (snark-hunt/instrumented tree)
+  (call-with-current-continuation
+   (lambda (t_exit)
+     (or (let lp ((tree tree))
+	   (pp tree)
+	   (cond ((pair? tree) (or (lp (car tree)) (lp (cdr tree))))
+	     ((eqv? tree 'snark) (begin (pp 'exit) (t_exit #t))))
+	   #f)
+	 #f))))
+
+;(snark-hunt/instrumented '(((a b c) d (e f)) g (((snark . "oops") h) (i . j))))
+; (((a b c) d (e f)) g (((snark . "oops") h) (i . j)))
+; ((a b c) d (e f))
+; (a b c)
+; a
+; (b c)
+; b
+; (c)
+; c
+; ()
+; (d (e f))
+; d
+; ((e f))
+; (e f)
+; e
+; (f)
+; f
+; ()
+; ()
+; (g (((snark . "oops") h) (i . j)))
+; g
+; ((((snark . "oops") h) (i . j)))
+; (((snark . "oops") h) (i . j))
+; ((snark . "oops") h)
+; (snark . "oops")
+; snark
+; exit
+; Value: #t
+
+;;; Problem 6.4A
+(define (flip-coin)
+  (amb #t #f))
+
+(define (flip n)
+  (if (= n 0) '()
+      (cons (flip-coin) (flip (- n 1)))))
+
+;;; Problem 6.4B
+; need to overwrite yield function to use our new extraction method
+(define (yield)
+  (if (stack&queue-empty? *search-schedule*)
+      (*top-level* #f)
+      ((get-elm))))
+
+(define (get-elm) (pop! *search-schedule*)) ; keep default as pop!
+
+(define alt #t)
+
+(define (alternate)
+  (if alt
+      (begin
+	(set! alt #f)
+	(pop! *search-schedule*))
+      (begin
+	(set! alt #t)
+	(pop-right! *search-schedule*))))
+
+(define (with-left-to-right-alternation thunk)
+  (call-with-current-continuation
+   (lambda (k)
+     (fluid-let ((get-elm alternate)
+		 (alt #t))
+       (thunk)))))
+
+(define (with-right-to-left-alternation thunk)
+  (call-with-current-continuation
+   (lambda (k)
+     (fluid-let ((get-elm alternate)
+		 (alt #f))
+       (thunk)))))
+
+(define (with-random-order-alternation thunk)
+  (call-with-current-continuation
+   (lambda (k)
+     (fluid-let ((get-elm (lambda () (pop-random! *search-schedule*))))
+       (thunk)))))
+
+;(with-left-to-right-alternation (lambda () (pp (flip 10))))
+; (#t #f #t #f #t #f #t #f #t #f)
+;(with-right-to-left-alternation (lambda () (pp (flip 10))))
+; (#f #t #f #t #f #t #f #t #f #t)
+;(with-random-order-alternation (lambda () (pp (flip 10))))
+; (#f #t #t #t #t #f #t #t #f #f)
