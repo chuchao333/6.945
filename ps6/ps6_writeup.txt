@@ -1,0 +1,17 @@
+Owen Derby
+3/20/13
+6.945 Pset 6
+
+Problem 6.1: Lorna's father is Colonel Downing. There are 3 possible solutions
+	if we don't know Mary Ann's father.
+
+
+Problem 6.3: The difference arises from the order in which the two searches try
+	alternatives. For this particular case, the answer is found sooner by
+	depth-first traversal than by breadth-first. The extra calls to fail
+	arise from the cases where there are no valid alternatives left for j
+	and/or k given the current assignments of i and/or j. Finally,
+	depth-first search won't work for AX 3.f because the search simply
+	doesn't terminate, and so has infinite depth. It will spend forever
+	trying to add all the possible values for i before ever moving onto
+	setting values for j.

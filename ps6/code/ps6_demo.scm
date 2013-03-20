@@ -1,5 +1,4 @@
 ;;; Problem 6.1
-
 (define (yacht-club)
   (define maryann 1)
   (define gabrielle 2)
@@ -42,5 +41,19 @@
     (amb)))
 
 ;(with-depth-first-schedule yacht-club)
-
 ;Value: ((moore_daughter 1) (hood_daughter 5) (downing_daughter 3) (hall_daughter 2) (parker_daughter 4))
+
+;;; Problem 6.2
+(define (snark-hunt tree)
+  (call-with-current-continuation
+   (lambda (t_exit)
+     (or (let lp ((tree tree))
+	   (cond ((pair? tree) (or (lp (car tree)) (lp (cdr tree))))
+	     ((eqv? tree 'snark) (t_exit #t)))
+	   #f)
+	 #f))))
+
+;(snark-hunt '(((a b c) d (e f)) g (((snark . "oops") h) (i . j))))
+; Value: #t
+;(snark-hunt '(((a b c) d (e f)) g (((snak . "oops") h) (i . j))))
+; Value: #f
