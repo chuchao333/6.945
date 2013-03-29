@@ -2,6 +2,8 @@ Owen Derby
 3/20/13
 6.945 Pset 6
 
+code at https://github.com/oderby/6.945/tree/master/ps6/code
+
 Problem 6.1: Lorna's father is Colonel Downing. There are 3 possible solutions
 	if we don't know Mary Ann's father.
 
