@@ -66,24 +66,38 @@
 	      (let-cell part
 			(add-branch! sum-node part part-name)))
 	    part-names)
-  (cond ((= (length part-names) 2)
-	 (c:+ (eq-get sum-node (car part-names))
-	      (eq-get sum-node (cadr part-names))
-	      sum-node)
-	 'done)
-	(else
-	 (error "I don't know how to sum multiple parts"))))
+  (let lp ((sum-node sum-node)
+	   (part-names part-names))
+    (cond ((= (length part-names) 2)
+	   (c:+ (eq-get sum-node (car part-names))
+		(eq-get sum-node (cadr part-names))
+		sum-node)
+	   'done)
+	  (else
+	   (let-cell sub-sum-node
+		     (lp sub-sum-node (cdr part-names))
+		     (c:+ (eq-get sum-node (car part-names))
+			  sub-sum-node
+			  sum-node))
+	   'done))))
 
 (define (combine-financial-entities compound . parts)
-  (assert (every financial-entity? parts))
-  (cond ((= (length parts) 2)
-	 (let ((p1 (car parts)) (p2 (cadr parts)))
-	   (c:+ (gross-income p1) (gross-income p2) (gross-income compound))
-	   (c:+ (net-income p1) (net-income p2) (net-income compound))
-	   (c:+ (expenses p1) (expenses p2) (expenses compound))
-	   'done))
-	(else
-	 (error "I don't know how to combine multiple parts"))))
+  (assert (every financial-entity? parts) "every part should be a financial entity")
+  (assert (financial-entity? compound) "compound should be a financial entity")
+  (define (combiner p1 p2 p3)
+    (c:+ (gross-income p1) (gross-income p2) (gross-income p3))
+    (c:+ (net-income p1) (net-income p2) (net-income p3))
+    (c:+ (expenses p1) (expenses p2) (expenses p3))
+    'done)
+  (let ((p1 (car parts)) (p2 (cadr parts)) (rest (cdr parts)))
+    (cond ((= (length parts) 2)
+	   (combiner p1 p2 compound))
+	  (else
+	   (let-cell sub-compound
+		     (make-financial-entity sub-compound)
+		     (apply combine-financial-entities (cons sub-compound rest))
+		     (combiner p1 sub-compound compound)))
+	  )))
 
 #|
 (initialize-scheduler)
