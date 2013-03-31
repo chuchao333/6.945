@@ -1,0 +1,1938 @@
+%!PS-Adobe-3.0
+%%BoundingBox: 18 36 594 756
+%%Title: letter
+%%Creator: GNU Enscript 1.6.5.90
+%%CreationDate: Mon Mar 18 22:17:54 2013
+%%Orientation: Portrait
+%%Pages: (atend)
+%%DocumentMedia: Letter 612 792 0 () ()
+%%DocumentNeededResources: (atend)
+%%EndComments
+%%BeginProlog
+%%BeginResource: procset Enscript-Prolog 1.6.5 90
+%
+% Procedures.
+%
+
+/_S {	% save current state
+  /_s save def
+} def
+/_R {	% restore from saved state
+  _s restore
+} def
+
+/S {	% showpage protecting gstate
+  gsave
+  showpage
+  grestore
+} bind def
+
+/MF {	% fontname newfontname -> -	make a new encoded font
+  /newfontname exch def
+  /fontname exch def
+
+  /fontdict fontname findfont def
+  /newfont fontdict maxlength dict def
+
+  fontdict {
+    exch
+    dup /FID eq {
+      % skip FID pair
+      pop pop
+    } {
+      % copy to the new font dictionary
+      exch newfont 3 1 roll put
+    } ifelse
+  } forall
+
+  newfont /FontName newfontname put
+
+  % insert only valid encoding vectors
+  encoding_vector length 256 eq {
+    newfont /Encoding encoding_vector put
+  } if
+
+  newfontname newfont definefont pop
+} def
+
+/MF_PS { % fontname newfontname -> -	make a new font preserving its enc
+  /newfontname exch def
+  /fontname exch def
+
+  /fontdict fontname findfont def
+  /newfont fontdict maxlength dict def
+
+  fontdict {
+    exch
+    dup /FID eq {
+      % skip FID pair
+      pop pop
+    } {
+      % copy to the new font dictionary
+      exch newfont 3 1 roll put
+    } ifelse
+  } forall
+
+  newfont /FontName newfontname put
+
+  newfontname newfont definefont pop
+} def
+
+/SF { % fontname width height -> -	set a new font
+  /height exch def
+  /width exch def
+
+  findfont
+  [width 0 0 height 0 0] makefont setfont
+} def
+
+/SUF { % fontname width height -> -	set a new user font
+  /height exch def
+  /width exch def
+
+  /F-gs-user-font MF
+  /F-gs-user-font width height SF
+} def
+
+/SUF_PS { % fontname width height -> -	set a new user font preserving its enc
+  /height exch def
+  /width exch def
+
+  /F-gs-user-font MF_PS
+  /F-gs-user-font width height SF
+} def
+
+/M {moveto} bind def
+/s {show} bind def
+
+/Box {	% x y w h -> -			define box path
+  /d_h exch def /d_w exch def /d_y exch def /d_x exch def
+  d_x d_y  moveto
+  d_w 0 rlineto
+  0 d_h rlineto
+  d_w neg 0 rlineto
+  closepath
+} def
+
+/bgs {	% x y height blskip gray str -> -	show string with bg color
+  /str exch def
+  /gray exch def
+  /blskip exch def
+  /height exch def
+  /y exch def
+  /x exch def
+
+  gsave
+    x y blskip sub str stringwidth pop height Box
+    gray setgray
+    fill
+  grestore
+  x y M str s
+} def
+
+/bgcs { % x y height blskip red green blue str -> -  show string with bg color
+  /str exch def
+  /blue exch def
+  /green exch def
+  /red exch def
+  /blskip exch def
+  /height exch def
+  /y exch def
+  /x exch def
+
+  gsave
+    x y blskip sub str stringwidth pop height Box
+    red green blue setrgbcolor
+    fill
+  grestore
+  x y M str s
+} def
+
+% Highlight bars.
+/highlight_bars {	% nlines lineheight output_y_margin gray -> -
+  gsave
+    setgray
+    /ymarg exch def
+    /lineheight exch def
+    /nlines exch def
+
+    % This 2 is just a magic number to sync highlight lines to text.
+    0 d_header_y ymarg sub 2 sub translate
+
+    /cw d_output_w cols div def
+    /nrows d_output_h ymarg 2 mul sub lineheight div cvi def
+
+    % for each column
+    0 1 cols 1 sub {
+      cw mul /xp exch def
+
+      % for each rows
+      0 1 nrows 1 sub {
+        /rn exch def
+        rn lineheight mul neg /yp exch def
+        rn nlines idiv 2 mod 0 eq {
+	  % Draw highlight bar.  4 is just a magic indentation.
+	  xp 4 add yp cw 8 sub lineheight neg Box fill
+	} if
+      } for
+    } for
+
+  grestore
+} def
+
+% Line highlight bar.
+/line_highlight {	% x y width height gray -> -
+  gsave
+    /gray exch def
+    Box gray setgray fill
+  grestore
+} def
+
+% Column separator lines.
+/column_lines {
+  gsave
+    .1 setlinewidth
+    0 d_footer_h translate
+    /cw d_output_w cols div def
+    1 1 cols 1 sub {
+      cw mul 0 moveto
+      0 d_output_h rlineto stroke
+    } for
+  grestore
+} def
+
+% Column borders.
+/column_borders {
+  gsave
+    .1 setlinewidth
+    0 d_footer_h moveto
+    0 d_output_h rlineto
+    d_output_w 0 rlineto
+    0 d_output_h neg rlineto
+    closepath stroke
+  grestore
+} def
+
+% Do the actual underlay drawing
+/draw_underlay {
+  ul_style 0 eq {
+    ul_str true charpath stroke
+  } {
+    ul_str show
+  } ifelse
+} def
+
+% Underlay
+/underlay {	% - -> -
+  gsave
+    0 d_page_h translate
+    d_page_h neg d_page_w atan rotate
+
+    ul_gray setgray
+    ul_font setfont
+    /dw d_page_h dup mul d_page_w dup mul add sqrt def
+    ul_str stringwidth pop dw exch sub 2 div ul_h_ptsize -2 div moveto
+    draw_underlay
+  grestore
+} def
+
+/user_underlay {	% - -> -
+  gsave
+    ul_x ul_y translate
+    ul_angle rotate
+    ul_gray setgray
+    ul_font setfont
+    0 0 ul_h_ptsize 2 div sub moveto
+    draw_underlay
+  grestore
+} def
+
+% Page prefeed
+/page_prefeed {		% bool -> -
+  statusdict /prefeed known {
+    statusdict exch /prefeed exch put
+  } {
+    pop
+  } ifelse
+} def
+
+% Wrapped line markers
+/wrapped_line_mark {	% x y charwith charheight type -> -
+  /type exch def
+  /h exch def
+  /w exch def
+  /y exch def
+  /x exch def
+
+  type 2 eq {
+    % Black boxes (like TeX does)
+    gsave
+      0 setlinewidth
+      x w 4 div add y M
+      0 h rlineto w 2 div 0 rlineto 0 h neg rlineto
+      closepath fill
+    grestore
+  } {
+    type 3 eq {
+      % Small arrows
+      gsave
+        .2 setlinewidth
+        x w 2 div add y h 2 div add M
+        w 4 div 0 rlineto
+        x w 4 div add y lineto stroke
+
+        x w 4 div add w 8 div add y h 4 div add M
+        x w 4 div add y lineto
+	w 4 div h 8 div rlineto stroke
+      grestore
+    } {
+      % do nothing
+    } ifelse
+  } ifelse
+} def
+
+% EPSF import.
+
+/BeginEPSF {
+  /b4_Inc_state save def    		% Save state for cleanup
+  /dict_count countdictstack def	% Count objects on dict stack
+  /op_count count 1 sub def		% Count objects on operand stack
+  userdict begin
+  /showpage { } def
+  0 setgray 0 setlinecap
+  1 setlinewidth 0 setlinejoin
+  10 setmiterlimit [ ] 0 setdash newpath
+  /languagelevel where {
+    pop languagelevel
+    1 ne {
+      false setstrokeadjust false setoverprint
+    } if
+  } if
+} bind def
+
+/EndEPSF {
+  count op_count sub { pos } repeat	% Clean up stacks
+  countdictstack dict_count sub { end } repeat
+  b4_Inc_state restore
+} bind def
+
+% Check PostScript language level.
+/languagelevel where {
+  pop /gs_languagelevel languagelevel def
+} {
+  /gs_languagelevel 1 def
+} ifelse
+%%EndResource
+%%BeginResource: procset Enscript-Encoding-88591 1.6.5 90
+/encoding_vector [
+/.notdef      	/.notdef      	/.notdef      	/.notdef      	
+/.notdef      	/.notdef      	/.notdef      	/.notdef      	
+/.notdef      	/.notdef      	/.notdef      	/.notdef      	
+/.notdef      	/.notdef      	/.notdef      	/.notdef      	
+/.notdef      	/.notdef      	/.notdef      	/.notdef      	
+/.notdef      	/.notdef      	/.notdef      	/.notdef      	
+/.notdef      	/.notdef      	/.notdef      	/.notdef      	
+/.notdef      	/.notdef      	/.notdef      	/.notdef      	
+/space        	/exclam       	/quotedbl     	/numbersign   	
+/dollar       	/percent      	/ampersand    	/quoteright   	
+/parenleft    	/parenright   	/asterisk     	/plus         	
+/comma        	/hyphen       	/period       	/slash        	
+/zero         	/one          	/two          	/three        	
+/four         	/five         	/six          	/seven        	
+/eight        	/nine         	/colon        	/semicolon    	
+/less         	/equal        	/greater      	/question     	
+/at           	/A            	/B            	/C            	
+/D            	/E            	/F            	/G            	
+/H            	/I            	/J            	/K            	
+/L            	/M            	/N            	/O            	
+/P            	/Q            	/R            	/S            	
+/T            	/U            	/V            	/W            	
+/X            	/Y            	/Z            	/bracketleft  	
+/backslash    	/bracketright 	/asciicircum  	/underscore   	
+/quoteleft    	/a            	/b            	/c            	
+/d            	/e            	/f            	/g            	
+/h            	/i            	/j            	/k            	
+/l            	/m            	/n            	/o            	
+/p            	/q            	/r            	/s            	
+/t            	/u            	/v            	/w            	
+/x            	/y            	/z            	/braceleft    	
+/bar          	/braceright   	/tilde        	/.notdef      	
+/.notdef      	/.notdef      	/.notdef      	/.notdef      	
+/.notdef      	/.notdef      	/.notdef      	/.notdef      	
+/.notdef      	/.notdef      	/.notdef      	/.notdef      	
+/.notdef      	/.notdef      	/.notdef      	/.notdef      	
+/.notdef      	/.notdef      	/.notdef      	/.notdef      	
+/.notdef      	/.notdef      	/.notdef      	/.notdef      	
+/.notdef      	/.notdef      	/.notdef      	/.notdef      	
+/.notdef      	/.notdef      	/.notdef      	/.notdef      	
+/space        	/exclamdown   	/cent         	/sterling     	
+/currency     	/yen          	/brokenbar    	/section      	
+/dieresis     	/copyright    	/ordfeminine  	/guillemotleft	
+/logicalnot   	/hyphen       	/registered   	/macron       	
+/degree       	/plusminus    	/twosuperior  	/threesuperior	
+/acute        	/mu           	/paragraph    	/bullet       	
+/cedilla      	/onesuperior  	/ordmasculine 	/guillemotright	
+/onequarter   	/onehalf      	/threequarters	/questiondown 	
+/Agrave       	/Aacute       	/Acircumflex  	/Atilde       	
+/Adieresis    	/Aring        	/AE           	/Ccedilla     	
+/Egrave       	/Eacute       	/Ecircumflex  	/Edieresis    	
+/Igrave       	/Iacute       	/Icircumflex  	/Idieresis    	
+/Eth          	/Ntilde       	/Ograve       	/Oacute       	
+/Ocircumflex  	/Otilde       	/Odieresis    	/multiply     	
+/Oslash       	/Ugrave       	/Uacute       	/Ucircumflex  	
+/Udieresis    	/Yacute       	/Thorn        	/germandbls   	
+/agrave       	/aacute       	/acircumflex  	/atilde       	
+/adieresis    	/aring        	/ae           	/ccedilla     	
+/egrave       	/eacute       	/ecircumflex  	/edieresis    	
+/igrave       	/iacute       	/icircumflex  	/idieresis    	
+/eth          	/ntilde       	/ograve       	/oacute       	
+/ocircumflex  	/otilde       	/odieresis    	/divide       	
+/oslash       	/ugrave       	/uacute       	/ucircumflex  	
+/udieresis    	/yacute       	/thorn        	/ydieresis    	
+] def
+%%EndResource
+%%EndProlog
+%%BeginSetup
+%%IncludeResource: font Courier-Bold
+%%IncludeResource: font Courier
+/HFpt_w 10 def
+/HFpt_h 10 def
+/Courier /HF-gs-font MF
+/HF /HF-gs-font findfont [HFpt_w 0 0 HFpt_h 0 0] makefont def
+/Courier-Bold /F-gs-font MF
+/F-gs-font 11 11 SF
+/#copies 1 def
+% Pagedevice definitions:
+gs_languagelevel 1 gt {
+  <<
+    /PageSize [612 792] 
+  >> setpagedevice
+} if
+%%BeginResource: procset Enscript-Header-simple 1.6.5 90
+
+/do_header {	% print default simple header
+  gsave
+    d_header_x d_header_y HFpt_h 3 div add translate
+
+    HF setfont
+    user_header_p {
+      5 0 moveto user_header_left_str show
+
+      d_header_w user_header_center_str stringwidth pop sub 2 div
+      0 moveto user_header_center_str show
+
+      d_header_w user_header_right_str stringwidth pop sub 5 sub
+      0 moveto user_header_right_str show
+    } {
+      5 0 moveto fname show
+      45 0 rmoveto fmodstr show
+      45 0 rmoveto pagenumstr show
+    } ifelse
+
+  grestore
+} def
+%%EndResource
+/d_page_w 576 def
+/d_page_h 720 def
+/d_header_x 0 def
+/d_header_y 705 def
+/d_header_w 576 def
+/d_header_h 15 def
+/d_footer_x 0 def
+/d_footer_y 0 def
+/d_footer_w 576 def
+/d_footer_h 0 def
+/d_output_w 576 def
+/d_output_h 705 def
+/cols 1 def
+%%EndSetup
+%%Page: (1) 1
+%%BeginPageSetup
+_S
+18 36 translate
+/pagenum 1 def
+/fname (ps.txt) def
+/fdir (.) def
+/ftail (ps.txt) def
+% User defined strings:
+/fmodstr (Mon Mar 18 22:17:50 2013) def
+/pagenumstr (1) def
+/user_header_p false def
+/user_footer_p false def
+%%EndPageSetup
+do_header
+31.4 679 M
+(                MASSACHVSETTS INSTITVTE OF TECHNOLOGY) s
+31.4 667 M
+(      Department of Electrical Engineering and Computer Science) s
+31.4 643 M
+(                          6.945 Spring 2013) s
+31.4 631 M
+(                            Problem Set 7) s
+31.4 607 M
+(   Issued: Wed. 20 March 2013               Due: Wed. 3 April 2013) s
+31.4 571 M
+(Readings: ) s
+31.4 547 M
+(   Radul & Sussman, "The Art of the Propagator," ) s
+31.4 535 M
+(   http://dspace.mit.edu/handle/1721.1/44215.) s
+31.4 523 M
+(   This is a preliminary paper about the ideas in the propagator) s
+31.4 511 M
+(   system.  It is NOT about the system we will be using.  However,) s
+31.4 499 M
+(   this paper accurately captures the philosophy of the system and) s
+31.4 487 M
+(   explains a simple implementation.) s
+31.4 463 M
+(   Alexey Radul's PhD thesis dissertation: ) s
+31.4 451 M
+(   Propagation Networks: A Flexible and Expressive Substrate for Computation) s
+31.4 439 M
+(   http://web.mit.edu/~axch/www/phd-thesis.pdf) s
+31.4 427 M
+(   This is more detail and more worked out than the "Art" paper above,) s
+31.4 415 M
+(   but it is longer.) s
+31.4 391 M
+(   Radul & Sussman, "Revised Report on the Propagator Model") s
+31.4 379 M
+(   http://groups.csail.mit.edu/mac/users/gjs/propagators/) s
+31.4 367 M
+(   This is the documentation for the system we will be using.) s
+31.4 343 M
+(Code: ) s
+31.4 319 M
+(   http://groups.csail.mit.edu/mac/users/gjs/propagators/propagator.tar) s
+31.4 307 M
+(   This is a tarball of the prototype propagator system that we will) s
+31.4 295 M
+(   be using.  It is written in MIT/GNU Scheme.  It is lots of code, so) s
+31.4 283 M
+(   don't try to read through it.) s
+31.4 259 M
+(   load.scm, ui.scm, extra.scm, family.scm) s
+31.4 223 M
+(                             Propagation) s
+31.4 199 M
+(    This problem set introduces propagation.  Propagation is a) s
+31.4 187 M
+(computational model built on the idea that the basic computational) s
+31.4 175 M
+(elements are autonomous machines interconnected by shared cells) s
+31.4 163 M
+(through which they communicate.  Each machine continuously examines) s
+31.4 151 M
+(the cells it is interested in, and adds information to some based on) s
+31.4 139 M
+(deductions it can make from information from the others.  This model) s
+31.4 127 M
+(makes it easy to smoothly combine expression-oriented and) s
+31.4 115 M
+(constraint-based programming; it also easily accommodates implicit) s
+31.4 103 M
+(incremental distributed search in ordinary programs.) s
+_R
+S
+%%Page: (2) 2
+%%BeginPageSetup
+_S
+18 36 translate
+/pagenum 2 def
+/fname (ps.txt) def
+/fdir (.) def
+/ftail (ps.txt) def
+% User defined strings:
+/fmodstr (Mon Mar 18 22:17:50 2013) def
+/pagenumstr (2) def
+/user_header_p false def
+/user_footer_p false def
+%%EndPageSetup
+do_header
+31.4 679 M
+(                           Getting Started) s
+31.4 655 M
+(You can obtain the prototype propagator system from the URL given.) s
+31.4 643 M
+(You should download it and unpack it in some appropriate directory.) s
+31.4 631 M
+(Get an MIT/GNU Scheme and change your working directory to the) s
+31.4 619 M
+(propagator directory, and load the propagator system, then go back to) s
+31.4 607 M
+(your problem set 7 directory and load the problem-set software:) s
+31.4 583 M
+(   \(cd <your propagator directory>\)) s
+31.4 571 M
+(   \(load "load"\)) s
+31.4 559 M
+(   \(cd <your ps07 directory>\)) s
+31.4 547 M
+(   \(load "load"\)) s
+31.4 523 M
+(Your propagator system is initialized by incanting:) s
+31.4 499 M
+(   \(initialize-scheduler\)) s
+31.4 475 M
+(This clears out all cells and wiring previously done.  It does not ) s
+31.4 463 M
+(clear out Scheme or propagator definitions.) s
+31.4 439 M
+(                   Cells Store Partial Information) s
+31.4 415 M
+(In this example, the content of cells will be numeric intervals.  For) s
+31.4 403 M
+(example, suppose the cell's content is the interval [3, 10], which you) s
+31.4 391 M
+(can think of as saying that the value described is between 3 and 10.) s
+31.4 379 M
+(If you add the interval [0, 5] as more content, then the cell content) s
+31.4 367 M
+(will be be [3, 5].  And if you now add the interval [6, 10] that) s
+31.4 355 M
+(produces a contradiction.) s
+31.4 331 M
+(Although propagation is a more general process, in this problem set,) s
+31.4 319 M
+(we will be keeping track of the assumptions that justify the content) s
+31.4 307 M
+(we put into a cell.  The propagator system keeps track of the reasons) s
+31.4 295 M
+(and can say which sets of reasons are contradictory.) s
+31.4 271 M
+(Here's an example.  John is a student doing term-time work.  There are) s
+31.4 259 M
+(various opinions about his earnings.  We need a cell to store) s
+31.4 247 M
+(information about John's earnings:) s
+31.4 223 M
+(   \(define-cell john-earnings\)) s
+31.4 199 M
+(Harry estimates that John's earnings are between $20K and $27K.) s
+31.4 187 M
+(This estimate is represented as an interval and it is dependent on) s
+31.4 175 M
+(the premise named harry-estimate.  We may find that harry-estimate is) s
+31.4 163 M
+(not true, but let's start out by believing it:) s
+31.4 139 M
+(   \(tell! john-earnings \(make-interval 20 27\) 'harry-estimate\)) s
+31.4 115 M
+(So at this point all we know about John's earnings is:) s
+31.4 91 M
+(   \(content john-earnings\)) s
+31.4 79 M
+(   #\(tms \(#\(value=#[interval 20 27],) s
+31.4 67 M
+(      premises=\(harry-estimate\),) s
+31.4 55 M
+(      informants=\(user\)\)\)\)) s
+_R
+S
+%%Page: (3) 3
+%%BeginPageSetup
+_S
+18 36 translate
+/pagenum 3 def
+/fname (ps.txt) def
+/fdir (.) def
+/ftail (ps.txt) def
+% User defined strings:
+/fmodstr (Mon Mar 18 22:17:50 2013) def
+/pagenumstr (3) def
+/user_header_p false def
+/user_footer_p false def
+%%EndPageSetup
+do_header
+31.4 679 M
+(                       TMS Maintains Provenance) s
+31.4 655 M
+(This is a data structure called a TMS \(Truth Maintenance System\).  It) s
+31.4 643 M
+(is a set of statements, with the premises that support those) s
+31.4 631 M
+(statements.  A cell can hold a TMS that keeps track of what is "true") s
+31.4 619 M
+(based on which assumptions are currently believed.  Initally, every) s
+31.4 607 M
+(assumption is believed to be true.) s
+31.4 583 M
+(Suppose Mary also estimates of John's earnings.  She believes it to be) s
+31.4 571 M
+(between $15K and $21K.) s
+31.4 547 M
+(\(tell! john-earnings \(make-interval 15 21\) 'Mary-estimate\)) s
+31.4 523 M
+(Now, if we look at what is known about John's earnings we see three ) s
+31.4 511 M
+(statements.  There is Harry's estimate, Mary's estimate, and the) s
+31.4 499 M
+(consequence of believing both:) s
+31.4 475 M
+(\(pp \(content john-earnings\)\)) s
+31.4 463 M
+(#\(tms) s
+31.4 451 M
+(  \(#\(value=#[interval 20 21],) s
+31.4 439 M
+(   premises=\(harry-estimate mary-estimate\),) s
+31.4 427 M
+(   informants=\(user\)\)) s
+31.4 415 M
+(   #\(value=#[interval 15 21],) s
+31.4 403 M
+(   premises=\(mary-estimate\),) s
+31.4 391 M
+(   informants=\(user\)\)) s
+31.4 379 M
+(   #\(value=#[interval 20 27],) s
+31.4 367 M
+(   premises=\(harry-estimate\),) s
+31.4 355 M
+(   informants=\(user\)\)\)\)) s
+31.4 331 M
+(At this time the best estimate \(most informative, taking into account) s
+31.4 319 M
+(all the sources of information\) is ) s
+31.4 295 M
+(\(inquire john-earnings\)) s
+31.4 283 M
+(#\(value=#[interval 20 21],) s
+31.4 271 M
+(   premises=\(harry-estimate mary-estimate\),) s
+31.4 259 M
+(   informants=\(user\)\)) s
+31.4 235 M
+(The bank \(which wants to give John a student credit card\) esimates his) s
+31.4 223 M
+(earnings to be between 25K and 30K.  However, this estimate) s
+31.4 211 M
+(contradicts the previous best estimate, so something must be wrong:) s
+31.4 187 M
+(\(tell! john-earnings \(make-interval 25 30\) 'bank-estimate\)) s
+31.4 175 M
+(;Value: \(contradiction \(Mary-estimate harry-estimate bank-estimate\)\)) s
+31.4 151 M
+(Here's the information about John's earnings now.  If we believe Mary) s
+31.4 139 M
+(and Harry and the bank, we get a contradiction.) s
+_R
+S
+%%Page: (4) 4
+%%BeginPageSetup
+_S
+18 36 translate
+/pagenum 4 def
+/fname (ps.txt) def
+/fdir (.) def
+/ftail (ps.txt) def
+% User defined strings:
+/fmodstr (Mon Mar 18 22:17:50 2013) def
+/pagenumstr (4) def
+/user_header_p false def
+/user_footer_p false def
+%%EndPageSetup
+do_header
+31.4 679 M
+(\(content john-earnings\)) s
+31.4 667 M
+(#\(tms \(#\(value=#[contradictory-interval 25 21],) s
+31.4 655 M
+(   premises=\(mary-estimate harry-estimate bank-estimate\),) s
+31.4 643 M
+(   informants=\(user\)\) #\(value=#[interval 25 30],) s
+31.4 631 M
+(   premises=\(bank-estimate\),) s
+31.4 619 M
+(   informants=\(user\)\) #\(value=#[interval 20 21],) s
+31.4 607 M
+(   premises=\(harry-estimate mary-estimate\),) s
+31.4 595 M
+(   informants=\(user\)\) #\(value=#[interval 15 21],) s
+31.4 583 M
+(   premises=\(mary-estimate\),) s
+31.4 571 M
+(   informants=\(user\)\) #\(value=#[interval 20 27],) s
+31.4 559 M
+(   premises=\(harry-estimate\),) s
+31.4 547 M
+(   informants=\(user\)\)\)\)) s
+31.4 523 M
+(Indeed, the best information we have is contradictory.) s
+31.4 499 M
+(\(inquire john-earnings\)) s
+31.4 487 M
+(#\(value=#[contradictory-interval 25 21],) s
+31.4 475 M
+(   premises=\(mary-estimate harry-estimate bank-estimate\),) s
+31.4 463 M
+(   informants=\(user\)\)) s
+31.4 427 M
+(                      Controlling the Worldview) s
+31.4 403 M
+(We can choose to disregard Harry's opinion:) s
+31.4 379 M
+(\(retract! 'harry-estimate\)) s
+31.4 355 M
+(But there is still a contradiction between the bank and Mary.) s
+31.4 331 M
+(\(inquire john-earnings\)) s
+31.4 319 M
+(#\(value=#[contradictory-interval 25 21],) s
+31.4 307 M
+(   premises=\(mary-estimate bank-estimate\),) s
+31.4 295 M
+(   informants=\(user\)\)) s
+31.4 271 M
+(The contradiction did not depend on Harry, so let's reinstate him.) s
+31.4 247 M
+(\(assert! 'harry-estimate\)) s
+31.4 223 M
+(Nothing has changed, except that the system now knows that the) s
+31.4 211 M
+(contradiction did not depend on Harry.) s
+31.4 187 M
+(\(inquire john-earnings\)) s
+31.4 175 M
+(#\(value=#[contradictory-interval 25 21],) s
+31.4 163 M
+(   premises=\(mary-estimate bank-estimate\),) s
+31.4 151 M
+(   informants=\(user\)\)) s
+31.4 127 M
+(Let's withdraw our our belief in Mary's estimate:) s
+31.4 103 M
+(\(retract! 'Mary-estimate\)) s
+_R
+S
+%%Page: (5) 5
+%%BeginPageSetup
+_S
+18 36 translate
+/pagenum 5 def
+/fname (ps.txt) def
+/fdir (.) def
+/ftail (ps.txt) def
+% User defined strings:
+/fmodstr (Mon Mar 18 22:17:50 2013) def
+/pagenumstr (5) def
+/user_header_p false def
+/user_footer_p false def
+%%EndPageSetup
+do_header
+31.4 679 M
+(Now John's earnings are between $25K and $27K, based on Harry's) s
+31.4 667 M
+(estimate together with the bank's estimate:) s
+31.4 643 M
+(\(inquire john-earnings\)) s
+31.4 631 M
+(#\(value=#[interval 25 27],) s
+31.4 619 M
+(   premises=\(harry-estimate bank-estimate\),) s
+31.4 607 M
+(   informants=\(user\)\)) s
+31.4 583 M
+(               Propagators Relate Information in Cells) s
+31.4 559 M
+(Let us attach symbolic descriptions to the earnings levels.  For) s
+31.4 547 M
+(example, imagine that MIT Financial services considers students to be) s
+31.4 535 M
+(eligible for loans if their earnings are less than 20K.  \(Not really!\)) s
+31.4 523 M
+(First, we will define a compound propagator that takes a value cell,) s
+31.4 511 M
+(an interval, and a boolean output cell.  It tells the boolean output) s
+31.4 499 M
+(cell to be true only if the contents of the value cell is within the) s
+31.4 475 M
+(range specified by the range.) s
+31.4 451 M
+(\(define-propagator \(p:in-range? value interval bool\)) s
+31.4 439 M
+(  \(p:and \(e:<= \(e:interval-low interval\) value\)) s
+31.4 427 M
+(         \(e:<= value \(e:interval-high interval\)\)) s
+31.4 415 M
+(         bool\)\)) s
+31.4 391 M
+(This is made up of several propagators.  It depends on the syntax of) s
+31.4 379 M
+(p: and e: propagator constructors, as described in class and in the) s
+31.4 367 M
+(propagator documentation.) s
+31.4 343 M
+(We'll introduce a property of an earnings-estimate cell called) s
+31.4 331 M
+(loan-eligible that will be true when the earnings are below 20K.) s
+31.4 307 M
+(The following procedure adds another cell as a symbolic property of a) s
+31.4 295 M
+(cell that contains an estimate.  The status of the property will be) s
+31.4 283 M
+(true or false \(or unknown or contradictory\) depending on whether the) s
+31.4 271 M
+(cell's content is within the designated interval.) s
+_R
+S
+%%Page: (6) 6
+%%BeginPageSetup
+_S
+18 36 translate
+/pagenum 6 def
+/fname (ps.txt) def
+/fdir (.) def
+/ftail (ps.txt) def
+% User defined strings:
+/fmodstr (Mon Mar 18 22:17:50 2013) def
+/pagenumstr (6) def
+/user_header_p false def
+/user_footer_p false def
+%%EndPageSetup
+do_header
+31.4 679 M
+(;;; estimate is the cell to give a symbolic property.  Interval is the) s
+31.4 667 M
+(;;; range for which the property will be true.  property-name is the) s
+31.4 655 M
+(;;; symbol used to access the symbolic property cell \(with eq-get\)) s
+31.4 643 M
+(;;; from the estimate cell.) s
+31.4 619 M
+(\(define \(add-interval-property estimate interval property-name\)) s
+31.4 607 M
+(  ;; Is there already such a property on the estimate?) s
+31.4 595 M
+(  \(let \(\(status-cell \(eq-get estimate property-name\)\)\) ;Already defined?) s
+31.4 583 M
+(    \(if status-cell) s
+31.4 571 M
+(        ;; Property already exists, get the range cell.) s
+31.4 559 M
+(        \(let \(\(range \(eq-get estimate \(symbol property-name ':range\)\)\)\)) s
+31.4 547 M
+(          \(if \(not range\)) s
+31.4 535 M
+(              \(error "Interval property has no range") s
+31.4 523 M
+(                     \(name estimate\) property-name\)\)) s
+31.4 511 M
+(          \(p:== interval range\)) s
+31.4 499 M
+(          'range-updated\)) s
+31.4 487 M
+(        ;; New definition: Create internal cells to hold the status of) s
+31.4 475 M
+(        ;; the symbolic property and its defining range \(initialized) s
+31.4 463 M
+(        ;; to the given interval\). ) s
+31.4 451 M
+(        \(let-cells \(status-cell range\)) s
+31.4 439 M
+(          ;; Initialize the range cell.) s
+31.4 427 M
+(          \(p:== interval range\)) s
+31.4 415 M
+(          ;; Make the status and the range properties of the estimate.) s
+31.4 403 M
+(          \(eq-put! estimate \(symbol property-name ':range\) range\)) s
+31.4 391 M
+(          \(eq-put! estimate property-name status-cell\)) s
+31.4 379 M
+(          ;; If the cell content is within the interval) s
+31.4 367 M
+(          ;; then propagate #t to the status-cell.) s
+31.4 355 M
+(          \(p:in-range? estimate range status-cell\)) s
+31.4 343 M
+(          ;; If the status is true then propagate the content of the) s
+31.4 331 M
+(          ;; interval-call to the estimate.) s
+31.4 319 M
+(          \(p:switch status-cell range estimate\)) s
+31.4 307 M
+(          'property-added\)\)\)\)) s
+31.4 283 M
+(We use this to add a loan-eligible property to the john-earnings cell.) s
+31.4 259 M
+(\(add-interval-property john-earnings \(make-interval 0 20\) 'loan-eligible\)) s
+31.4 235 M
+(Suppose that the MIT claims that John is loan-eligible:) s
+31.4 211 M
+(\(tell! \(eq-get john-earnings 'loan-eligible\) #t 'mit-financial\)) s
+31.4 199 M
+(;Value: \(contradiction \(bank-estimate harry-estimate mit-financial\)\)) s
+31.4 175 M
+(Whoops! That contradicts the other estimates.  Let's get rid of them:) s
+31.4 151 M
+(\(for-each retract! '\(harry-estimate bank-estimate\)\)) s
+31.4 127 M
+(OK, now the MIT estimate has propagated to john-earnings.) s
+31.4 103 M
+(\(inquire john-earnings\)) s
+31.4 91 M
+(#\(value=#[interval 0 20],) s
+31.4 79 M
+(   premises=\(mit-financial\),) s
+31.4 67 M
+(   informants=\(\(switch:p status-cell range\)\)\)) s
+_R
+S
+%%Page: (7) 7
+%%BeginPageSetup
+_S
+18 36 translate
+/pagenum 7 def
+/fname (ps.txt) def
+/fdir (.) def
+/ftail (ps.txt) def
+% User defined strings:
+/fmodstr (Mon Mar 18 22:17:50 2013) def
+/pagenumstr (7) def
+/user_header_p false def
+/user_footer_p false def
+%%EndPageSetup
+do_header
+31.4 679 M
+(Suppose MIT is worried and retracts its belief) s
+31.4 655 M
+(\(retract! 'mit-financial\)) s
+31.4 631 M
+(Then, nothing is known about John's financial status.) s
+31.4 607 M
+(\(inquire john-earnings\)) s
+31.4 595 M
+(;Value: #\(*the-nothing*\)) s
+31.4 571 M
+(\(inquire \(eq-get john-earnings 'loan-eligible\)\)) s
+31.4 559 M
+(;Value: #\(*the-nothing*\)) s
+31.4 535 M
+(But perhaps Mary was right all along:) s
+31.4 511 M
+(\(assert! 'Mary-estimate\)) s
+31.4 487 M
+(Then we have her estimate, but it is not low enough to make MIT happy.) s
+31.4 463 M
+(\(inquire john-earnings\)) s
+31.4 451 M
+(#\(value=#[interval 15 21],) s
+31.4 439 M
+(   premises=\(mary-estimate\),) s
+31.4 427 M
+(   informants=\(user\)\)) s
+31.4 403 M
+(\(inquire \(eq-get john-earnings 'loan-eligible\)\)) s
+31.4 391 M
+(;Value: #\(*the-nothing*\)) s
+31.4 367 M
+(But if Debbie also provides a low-ball estimate:) s
+31.4 343 M
+(\(tell! john-earnings \(make-interval 5 18\) 'debby-estimate\)) s
+31.4 319 M
+(Then John's earnings fall within the MIT guidelines and he is now) s
+31.4 307 M
+(eligible for a loan!) s
+31.4 283 M
+(\(inquire john-earnings\)) s
+31.4 271 M
+(#\(value=#[interval 15 18],) s
+31.4 259 M
+(   premises=\(mary-estimate debby-estimate\),) s
+31.4 247 M
+(   informants=\(user\)\)) s
+31.4 223 M
+(\(inquire \(eq-get john-earnings 'loan-eligible\)\)) s
+31.4 211 M
+(#\(value=#t,) s
+31.4 199 M
+(   premises=\(debby-estimate mary-estimate\),) s
+31.4 187 M
+(   informants=\(\(and:p cell4 cell2\)\)\)) s
+31.4 151 M
+(                  Example: Modeling Financial Status) s
+31.4 127 M
+(So now we have seen propagation with two cells, JOHN-EARNINGS and) s
+31.4 115 M
+(\(EQ-GET JOHN-EARNINGS 'LOAN-ELIGIBLE\), interconnected with) s
+31.4 103 M
+(propagators.  We see how provenance of factoids is carried by named) s
+31.4 91 M
+(assumptions, such as Mary-ESTIMATE, and how beliefs depend on the) s
+31.4 79 M
+(assumptions.  So it is now time to build something more interesting.) s
+_R
+S
+%%Page: (8) 8
+%%BeginPageSetup
+_S
+18 36 translate
+/pagenum 8 def
+/fname (ps.txt) def
+/fdir (.) def
+/ftail (ps.txt) def
+% User defined strings:
+/fmodstr (Mon Mar 18 22:17:50 2013) def
+/pagenumstr (8) def
+/user_header_p false def
+/user_footer_p false def
+%%EndPageSetup
+do_header
+31.4 679 M
+(We can generalize the interval-property classifier to attach multiple) s
+31.4 667 M
+(symbolic ranges to a cell containing an interval.  We will allow the) s
+31.4 655 M
+(symbolic ranges to overlap.) s
+31.4 631 M
+(\(define \(\(c:bins named-ranges\) numeric-interval\)) s
+31.4 619 M
+(  \(for-each) s
+31.4 607 M
+(   \(lambda \(named-range\)) s
+31.4 595 M
+(     \(add-interval-property numeric-interval) s
+31.4 583 M
+(                          \(cadr named-range\)) s
+31.4 571 M
+(                          \(car named-range\)\)\)) s
+31.4 559 M
+(   named-ranges\)\)) s
+31.4 535 M
+(Using this, on the authority of gjs, we can make multiple symbolic) s
+31.4 523 M
+(ranges associated with the numerical range cell foo:) s
+31.4 499 M
+(\(\(c:bins \(named-ranges 'gjs) s
+31.4 487 M
+(            `\(low    ,\(make-interval 3 6\)\)) s
+31.4 475 M
+(            `\(medium ,\(make-interval 5 8\)\)) s
+31.4 463 M
+(            `\(high   ,\(make-interval 7 9\)\)\)\)) s
+31.4 451 M
+( foo\)) s
+31.4 427 M
+(The intervals will depend on the GJS premise.  If GJS is retracted,) s
+31.4 415 M
+(the intervals will become unknown, but the named cells will remain,) s
+31.4 403 M
+(and new intervals can be placed in them.) s
+31.4 355 M
+(Now, imagine that we have a population of people, each of which has a) s
+31.4 343 M
+(variety of properties, some of which are numerical, some of which are) s
+31.4 331 M
+(symbolic, and some of which are symbolic descriptions of ranges of) s
+31.4 319 M
+(numerical properties.  For example, Joe may be tall and Harry may be) s
+31.4 307 M
+(of medium height; Joe may have a high income and Harry a low income;) s
+31.4 295 M
+(but Harry may be frugal and Joe may be spending beyond his means.) s
+_R
+S
+%%Page: (9) 9
+%%BeginPageSetup
+_S
+18 36 translate
+/pagenum 9 def
+/fname (ps.txt) def
+/fdir (.) def
+/ftail (ps.txt) def
+% User defined strings:
+/fmodstr (Mon Mar 18 22:17:50 2013) def
+/pagenumstr (9) def
+/user_header_p false def
+/user_footer_p false def
+%%EndPageSetup
+do_header
+31.4 679 M
+(-------------) s
+31.4 667 M
+(Problem 7.1: Warmup) s
+31.4 643 M
+(a. Given a list of names of imaginary people, make a program that) s
+31.4 631 M
+(attaches to each name the numerical properties "height", "weight",) s
+31.4 619 M
+("income", "expenses", \(and any others you may please to invent\).  For) s
+31.4 607 M
+(each such numerical property assign further symbolic properties.  For) s
+31.4 595 M
+(symbolically named ranges your code should use the c:bins) s
+31.4 583 M
+(propagator-network constructor we supplied above.  It uses the eq-put!) s
+31.4 571 M
+(and eq-get! mechanism for attaching things together.  We provide a) s
+31.4 559 M
+(path mechanism to make these chains easy to work with.) s
+31.4 535 M
+(Problem 7.1: Warmup continued) s
+31.4 511 M
+(For example:) s
+31.4 487 M
+(     \(eq-put! 'Joe 'height 'Joes-height-cell\)) s
+31.4 463 M
+(     \(eq-put! 'Joes-height-cell 'tall 'Joes-tall-cell\)) s
+31.4 439 M
+(     \(\(eq-path '\(tall height\)\) 'Joe\)) s
+31.4 427 M
+(     ;Value: Joes-tall-cell) s
+31.4 403 M
+(Of course, 'Joes-tall-cell and 'Joes-height-cell should actually be) s
+31.4 391 M
+(appropriate cells, not the atomic symbols used here for illustration.) s
+31.4 367 M
+(b. Add to your program some interesting cells and constraints.  For an) s
+31.4 355 M
+(example, add a cell to the data about each person that carries an) s
+31.4 343 M
+(estimate of whether he is living beyond his/her means: So, if the) s
+31.4 331 M
+("expenses" interval is strictly higher than the "income" interval then) s
+31.4 319 M
+(the "living-beyond-means" property should become true, decorated with) s
+31.4 307 M
+(the assumptions on which this judgement depended.  Some of these may) s
+31.4 295 M
+(be higher-order combinations, for example, if the symbolic properties) s
+31.4 283 M
+("rich" and "living-beyond-means" are both true this should make the) s
+31.4 271 M
+("profligate" property become true.  Your dossier on each person should) s
+31.4 259 M
+(include several such interrelated properties.) s
+31.4 235 M
+(Make sure that the assumptions are correctly tracked by your program.) s
+31.4 223 M
+(Demonstrate your code on some fun data.) s
+31.4 211 M
+(-------------) s
+_R
+S
+%%Page: (10) 10
+%%BeginPageSetup
+_S
+18 36 translate
+/pagenum 10 def
+/fname (ps.txt) def
+/fdir (.) def
+/ftail (ps.txt) def
+% User defined strings:
+/fmodstr (Mon Mar 18 22:17:50 2013) def
+/pagenumstr (10) def
+/user_header_p false def
+/user_footer_p false def
+%%EndPageSetup
+do_header
+31.4 679 M
+(                          A Financial Model) s
+31.4 655 M
+(Real people are not isolated individuals.  They are bound to other) s
+31.4 643 M
+(people by relationships.  For example, there are families: Alyssa P.) s
+31.4 631 M
+(Hacker and Ben Bitdiddle are married; as a consequence there is a) s
+31.4 619 M
+(family income and family expenses.  Ben and Harry Reasoner belong to a) s
+31.4 607 M
+(club together.  Part of Ben's expenses are dues for the club; so the) s
+31.4 595 M
+(club has income and expenses.  Income and expenses are a kind of flow.) s
+31.4 583 M
+(Unless an activity generates value \(such as farming\) or destroys it) s
+31.4 571 M
+(\(such as eating\) there is a conservation law.  In every isolated group) s
+31.4 559 M
+(of interacting individuals the difference of the sum of the incomes) s
+31.4 547 M
+(and the sum of the expenses must be equal to the rate of creation \(or) s
+31.4 535 M
+(destruction, if negative\) of value.  If a group is not isolated we may) s
+31.4 523 M
+(violate the conservation to model income or expenses originating) s
+31.4 511 M
+(outside the group \(e.g. interest, dividends, taxes\).  This gives us) s
+31.4 499 M
+(the beginnings of a way to model an economy.) s
+31.4 475 M
+(In the file family.scm we construct a small model of a family) s
+31.4 463 M
+(consisting of Ben and Alyssa.  Part of that model is a simple database) s
+31.4 451 M
+(structure made up using eq-properties.  There are only a few phenomena) s
+31.4 439 M
+(modeled here: income and expenses.) s
+31.4 415 M
+(-------------) s
+31.4 403 M
+(Problem 7.2: Building more constraints) s
+31.4 379 M
+(The procedures BREAKDOWN and COMBINE-FINANCIAL-ENTITIES should be able) s
+31.4 367 M
+(to combine more than two parts.  This requires building up the sums ) s
+31.4 355 M
+(for many parts.  Please fix these programs so that they correctly) s
+31.4 343 M
+(build a tree of adder constraints for any number of parts.) s
+31.4 331 M
+(-------------) s
+31.4 307 M
+(A population may have many such groupings and conservation laws.  It) s
+31.4 295 M
+(is fun to build a model and see the consequences that arise from) s
+31.4 283 M
+(alternate world views.) s
+31.4 259 M
+(-------------) s
+31.4 247 M
+(Problem 7.3: A small family complication) s
+31.4 223 M
+(Alyssa and Ben are married.  Elaborate this model.  For example, Harry) s
+31.4 211 M
+(Reasoner and Eva Lu Ator are also married, and Harry and Ben are) s
+31.4 199 M
+(members of a club.  Add financial entities representing those) s
+31.4 187 M
+(relationships and elaborate the story line.) s
+31.4 163 M
+(How accurate are the inferences based on partial information?  Do you) s
+31.4 151 M
+(see any cases where the intervals are much wider than they ought to) s
+31.4 139 M
+(be?  When might this happen?) s
+31.4 115 M
+(Make a situation where, because of some wrong information there are) s
+31.4 103 M
+(contradictions, and the results of an INQUIRE query differ depending) s
+31.4 91 M
+(on what worldview \(set of assumptions\) is adopted.  Use that to track) s
+31.4 79 M
+(down the bad data.) s
+31.4 67 M
+(-------------) s
+_R
+S
+%%Page: (11) 11
+%%BeginPageSetup
+_S
+18 36 translate
+/pagenum 11 def
+/fname (ps.txt) def
+/fdir (.) def
+/ftail (ps.txt) def
+% User defined strings:
+/fmodstr (Mon Mar 18 22:17:50 2013) def
+/pagenumstr (11) def
+/user_header_p false def
+/user_footer_p false def
+%%EndPageSetup
+do_header
+31.4 679 M
+(-------------) s
+31.4 667 M
+(Problem 7.4: Your turn) s
+31.4 643 M
+(Come up with an interesting application of the propagator framework.) s
+31.4 631 M
+(Build it and demonstrate your work.) s
+31.4 607 M
+(Some possible suggesgtions:) s
+31.4 583 M
+(a. Build a town, with about twenty or thirty individuals connected by a) s
+31.4 571 M
+(variety of overlapping financial relationships.  The inhabitants can) s
+31.4 559 M
+(be built using random numbers to build their financial states \(but) s
+31.4 547 M
+(make them "plausible"\).) s
+31.4 523 M
+(It is interesting to add in some qualitative constraints, as we) s
+31.4 511 M
+(demonstrated in the introduction and warmup.  There are rich and poor,) s
+31.4 499 M
+(there are profligate and frugal, there are honest people and scam) s
+31.4 487 M
+(artists.) s
+31.4 463 M
+(Which of your people have no visible means of support?  Who is living) s
+31.4 451 M
+(beyond their means?  How can we audit them?) s
+31.4 427 M
+(b. Build an interactive puzzle game, such as Sudoku, Minesweeper, or) s
+31.4 415 M
+(Mastermind, where the game rule enforcement and player feedback are) s
+31.4 403 M
+(implemented with propagators.) s
+31.4 379 M
+(Better yet, build an AI module that can do a half-decent job at) s
+31.4 367 M
+(playing the game, making deductions about appropriate moves using) s
+31.4 355 M
+(constraints and partial information, but without search backtracking.) s
+31.4 331 M
+(The games suggested above all have the interesting property that) s
+31.4 319 M
+(information about the final state of the game accumulates) s
+31.4 307 M
+(monotonically on the board.  Other games may have state that is highly) s
+31.4 295 M
+(dynamic, changing from turn to turn \(e.g. checkers\) as game pieces) s
+31.4 283 M
+(move or disappear.  Because of this "stateful" nature, such games) s
+31.4 271 M
+(require more abstraction to implement with propagators and will) s
+31.4 259 M
+(probably be more challenging.) s
+31.4 235 M
+(Also observe that Sudoku and Minesweeper have the property that safe) s
+31.4 223 M
+(moves are commutative, unlike turn-based games such as Mastermind.) s
+31.4 211 M
+(This impacts what kinds of constraints you need to build and how you) s
+31.4 199 M
+(structure an AI.) s
+31.4 175 M
+(Tip: Although the most obvious way to represent game cell states may) s
+31.4 163 M
+(be by defining a custom data type, this involves quite a bit of) s
+31.4 151 M
+(trouble that we won't be covering in class. Instead, you can typically) s
+31.4 139 M
+(get away with representing states using intervals \(interpreted over) s
+31.4 127 M
+(the integers\) and boolean values \(by breaking up a single cell that) s
+31.4 115 M
+(would've contained a complex enumerated type into several associated) s
+31.4 103 M
+(cells containing only boolean indicators\).  You will likely need to) s
+31.4 91 M
+(re-use the strategy for variadic constraints you developed back in) s
+31.4 79 M
+(problem set 2.) s
+31.4 67 M
+(-------------) s
+_R
+S
+%%Page: (12) 12
+%%BeginPageSetup
+_S
+18 36 translate
+/pagenum 12 def
+/fname (ps.txt) def
+/fdir (.) def
+/ftail (ps.txt) def
+% User defined strings:
+/fmodstr (Mon Mar 18 22:17:50 2013) def
+/pagenumstr (12) def
+/user_header_p false def
+/user_footer_p false def
+%%EndPageSetup
+do_header
+31.4 679 M
+(;;;; This is the ps07 file extra.scm) s
+31.4 655 M
+(;;; These make e: and p: propagators out of the scheme procedures) s
+31.4 643 M
+(\(propagatify interval-low\)) s
+31.4 631 M
+(\(propagatify interval-high\)) s
+31.4 607 M
+(\(define-propagator \(p:in-range? value interval bool\)) s
+31.4 595 M
+(  \(p:and \(e:<= \(e:interval-low interval\) value\)) s
+31.4 583 M
+(         \(e:<= value \(e:interval-high interval\)\)) s
+31.4 571 M
+(         bool\)\)) s
+31.4 547 M
+(\(define \(add-interval-property estimate interval property-name\)) s
+31.4 535 M
+(  ;; Is there already such a property on the estimate?) s
+31.4 523 M
+(  \(let \(\(status-cell \(eq-get estimate property-name\)\)\) ;Already defined?) s
+31.4 511 M
+(    \(if status-cell) s
+31.4 499 M
+(        ;; Property already exists, get the range cell.) s
+31.4 487 M
+(        \(let \(\(range \(eq-get estimate \(symbol property-name ':range\)\)\)\)) s
+31.4 475 M
+(          \(if \(not range\)) s
+31.4 463 M
+(              \(error "Interval property has no range") s
+31.4 451 M
+(                     \(name estimate\) property-name\)\)) s
+31.4 439 M
+(          \(p:== interval range\)) s
+31.4 427 M
+(          'range-updated\)) s
+31.4 415 M
+(        ;; New definition:) s
+31.4 403 M
+(        ;; Create internal cells to hold the status of the symbolic) s
+31.4 391 M
+(        ;; property and its defining range \(initialized to the given interval\).) s
+31.4 379 M
+(        \(let-cells \(status-cell range\)) s
+31.4 367 M
+(          ;; Initialize the range cell.) s
+31.4 355 M
+(          \(p:== interval range\)) s
+31.4 343 M
+(          ;; Make the status cell and the range named properties of) s
+31.4 331 M
+(          ;; the estimate cell.) s
+31.4 319 M
+(          \(eq-put! estimate \(symbol property-name ':range\) range\)) s
+31.4 307 M
+(          \(eq-put! estimate property-name status-cell\)) s
+31.4 295 M
+(          ;; If the cell content is within the interval) s
+31.4 283 M
+(          ;; then propagate #t to the status-cell.) s
+31.4 271 M
+(          \(p:in-range? estimate range status-cell\)) s
+31.4 259 M
+(          ;; If the status is true then propagate the content of the) s
+31.4 247 M
+(          ;; interval-call to the estimate.) s
+31.4 235 M
+(          \(p:switch status-cell range estimate\)) s
+31.4 223 M
+(          'property-added\)\)\)\)) s
+_R
+S
+%%Page: (13) 13
+%%BeginPageSetup
+_S
+18 36 translate
+/pagenum 13 def
+/fname (ps.txt) def
+/fdir (.) def
+/ftail (ps.txt) def
+% User defined strings:
+/fmodstr (Mon Mar 18 22:17:50 2013) def
+/pagenumstr (13) def
+/user_header_p false def
+/user_footer_p false def
+%%EndPageSetup
+do_header
+31.4 679 M
+(\(define \(\(c:bins named-ranges\) numeric-interval\)) s
+31.4 667 M
+(  \(for-each) s
+31.4 655 M
+(   \(lambda \(named-range\)) s
+31.4 643 M
+(     \(add-interval-property numeric-interval) s
+31.4 631 M
+(                            \(cadr named-range\)) s
+31.4 619 M
+(                            \(car named-range\)\)\)) s
+31.4 607 M
+(   named-ranges\)\)) s
+31.4 571 M
+(;;; This can be used to support named ranges with a premise) s
+31.4 559 M
+(;;; representing the range-defining authority:) s
+31.4 535 M
+(\(define \(named-ranges authority . named-ranges\)) s
+31.4 523 M
+(  \(map \(lambda \(named-range\)) s
+31.4 511 M
+(         \(list \(car named-range\)) s
+31.4 499 M
+(               \(depends-on \(cadr named-range\) authority\)\)\)) s
+31.4 487 M
+(       named-ranges\)\)) s
+_R
+S
+%%Page: (14) 14
+%%BeginPageSetup
+_S
+18 36 translate
+/pagenum 14 def
+/fname (ps.txt) def
+/fdir (.) def
+/ftail (ps.txt) def
+% User defined strings:
+/fmodstr (Mon Mar 18 22:17:50 2013) def
+/pagenumstr (14) def
+/user_header_p false def
+/user_footer_p false def
+%%EndPageSetup
+do_header
+31.4 679 M
+(;;;; This is the ps07 file ui.scm) s
+31.4 655 M
+(;;; This removes those annoying hash numbers after ;Value:) s
+31.4 643 M
+(\(set! repl:write-result-hash-numbers? #f\)) s
+31.4 619 M
+(;;; This is part of paranoid programming.) s
+31.4 607 M
+(\(define \(assert p #!optional error-comment irritant\)) s
+31.4 595 M
+(  \(if \(not p\)) s
+31.4 583 M
+(      \(begin) s
+31.4 571 M
+(        \(if \(not \(default-object? irritant\)\)) s
+31.4 559 M
+(            \(pp irritant\)\)) s
+31.4 547 M
+(        \(error) s
+31.4 535 M
+(         \(if \(default-object? error-comment\)) s
+31.4 523 M
+(             "Failed assertion") s
+31.4 511 M
+(             error-comment\)\)\)\)\)) s
+31.4 487 M
+(;;; This abstracts an annoying composition) s
+31.4 475 M
+(\(define \(depends-on information . premises\)) s
+31.4 463 M
+(  \(make-tms \(contingent information premises\)\)\)) s
+31.4 439 M
+(;;; This is required because \(run\) returns old value if there is) s
+31.4 427 M
+(;;; nothing to do.  This is a problem if a contradiction is resolved) s
+31.4 415 M
+(;;; by a kick-out! with no propagation.) s
+31.4 391 M
+(\(define \(tell! cell information . informants\)) s
+31.4 379 M
+(  \(assert \(cell? cell\) "Can only tell something to a cell."\)) s
+31.4 367 M
+(  \(set! *last-value-of-run* 'done\)) s
+31.4 355 M
+(  \(add-content cell \(make-tms \(contingent information informants\)\)\)) s
+31.4 343 M
+(  \(run\)\)) s
+31.4 319 M
+(\(define \(retract! premise\)) s
+31.4 307 M
+(  \(set! *last-value-of-run* 'done\)) s
+31.4 295 M
+(  \(kick-out! premise\)) s
+31.4 283 M
+(  \(run\)\)) s
+31.4 259 M
+(\(define \(assert! premise\)) s
+31.4 247 M
+(  \(set! *last-value-of-run* 'done\)) s
+31.4 235 M
+(  \(bring-in! premise\)) s
+31.4 223 M
+(  \(run\)\)) s
+_R
+S
+%%Page: (15) 15
+%%BeginPageSetup
+_S
+18 36 translate
+/pagenum 15 def
+/fname (ps.txt) def
+/fdir (.) def
+/ftail (ps.txt) def
+% User defined strings:
+/fmodstr (Mon Mar 18 22:17:50 2013) def
+/pagenumstr (15) def
+/user_header_p false def
+/user_footer_p false def
+%%EndPageSetup
+do_header
+31.4 679 M
+(\(define \(inquire cell\)) s
+31.4 667 M
+(  \(assert \(cell? cell\) "Can only inquire of a cell."\)) s
+31.4 655 M
+(  \(let \(\(c \(content cell\)\)\)) s
+31.4 643 M
+(    \(if \(tms? c\)) s
+31.4 631 M
+(        \(let \(\(v \(tms-query c\)\)\)) s
+31.4 619 M
+(          \(cond \(\(nothing? v\) v\)) s
+31.4 607 M
+(                \(\(contingent? v\) v\)) s
+31.4 595 M
+(                \(else) s
+31.4 583 M
+(                 \(error) s
+31.4 571 M
+(                  "Bug: TMS contains non-contingent statement") s
+31.4 559 M
+(                  cell\)\)\)\)) s
+31.4 547 M
+(        c\)\)\)) s
+_R
+S
+%%Page: (16) 16
+%%BeginPageSetup
+_S
+18 36 translate
+/pagenum 16 def
+/fname (ps.txt) def
+/fdir (.) def
+/ftail (ps.txt) def
+% User defined strings:
+/fmodstr (Mon Mar 18 22:17:50 2013) def
+/pagenumstr (16) def
+/user_header_p false def
+/user_footer_p false def
+%%EndPageSetup
+do_header
+31.4 679 M
+(;;;; A Small Financial Example -- this file is family.scm) s
+31.4 655 M
+(;;; First, we need a small database mechanism) s
+31.4 643 M
+(;;;  Parent and child here do not refer to biological) s
+31.4 631 M
+(;;;  things, but rather the relationships of parts) s
+31.4 619 M
+(;;;  of a database.) s
+31.4 595 M
+(\(define \(add-branch! parent child name\)) s
+31.4 583 M
+(  \(eq-put! parent name child\)) s
+31.4 571 M
+(  \(eq-put! child 'parent parent\)) s
+31.4 559 M
+(  \(eq-put! child 'given-name name\)) s
+31.4 547 M
+(  'done\)) s
+31.4 523 M
+(\(define \(name-of thing\)) s
+31.4 511 M
+(  \(let \(\(n \(eq-get thing 'given-name\)\)\)) s
+31.4 499 M
+(    \(if n) s
+31.4 487 M
+(        \(let \(\(p \(eq-get thing 'parent\)\)\)) s
+31.4 475 M
+(          \(if p) s
+31.4 463 M
+(              \(cons n \(name-of p\)\)) s
+31.4 451 M
+(              \(list n\)\)\)) s
+31.4 439 M
+(        \(list thing\)\)\)\)) s
+31.4 415 M
+(;;; e.g. \(thing-of Gaggle-salary gross-income Ben\)) s
+31.4 391 M
+(\(define \(thing-of name-path\)) s
+31.4 379 M
+(  \(let lp \(\(path name-path\)\)) s
+31.4 367 M
+(    \(cond \(\(= \(length path\) 1\) \(car path\)\)) s
+31.4 355 M
+(          \(else) s
+31.4 343 M
+(           \(eq-get \(lp \(cdr path\)\)) s
+31.4 331 M
+(                   \(car path\)\)\)\)\)\)) s
+31.4 283 M
+(;;; A financial entity has three cells) s
+31.4 259 M
+(\(define \(make-financial-entity entity\)) s
+31.4 247 M
+(  \(eq-put! entity 'kind-of-entity 'financial\)) s
+31.4 223 M
+(  \(let-cells \(gross-income expenses net-income\)) s
+31.4 199 M
+(    \(add-branch! entity gross-income 'gross-income\)) s
+31.4 187 M
+(    \(add-branch! entity net-income 'net-income\)) s
+31.4 175 M
+(    \(add-branch! entity expenses 'expenses\)) s
+31.4 151 M
+(    \(c:+ expenses net-income gross-income\)) s
+31.4 139 M
+(    'done) s
+31.4 127 M
+(    \)\)) s
+_R
+S
+%%Page: (17) 17
+%%BeginPageSetup
+_S
+18 36 translate
+/pagenum 17 def
+/fname (ps.txt) def
+/fdir (.) def
+/ftail (ps.txt) def
+% User defined strings:
+/fmodstr (Mon Mar 18 22:17:50 2013) def
+/pagenumstr (17) def
+/user_header_p false def
+/user_footer_p false def
+%%EndPageSetup
+do_header
+31.4 679 M
+(\(define \(financial-entity? thing\)) s
+31.4 667 M
+(  \(eq? \(eq-get thing 'kind-of-entity\) 'financial\)\)) s
+31.4 643 M
+(\(define \(gross-income entity\)) s
+31.4 631 M
+(  \(assert \(financial-entity? entity\)\)) s
+31.4 619 M
+(  \(eq-get entity 'gross-income\)\)) s
+31.4 595 M
+(\(define \(net-income entity\)) s
+31.4 583 M
+(  \(assert \(financial-entity? entity\)\)) s
+31.4 571 M
+(  \(eq-get entity 'net-income\)\)) s
+31.4 547 M
+(\(define \(expenses entity\)) s
+31.4 535 M
+(  \(assert \(financial-entity? entity\)\)) s
+31.4 523 M
+(  \(eq-get entity 'expenses\)\)) s
+31.4 499 M
+(\(define \(breakdown sum-node . part-names\)) s
+31.4 487 M
+(  \(for-each \(lambda \(part-name\)) s
+31.4 475 M
+(              \(let-cell part) s
+31.4 463 M
+(                        \(add-branch! sum-node part part-name\)\)\)) s
+31.4 451 M
+(            part-names\)) s
+31.4 439 M
+(  \(cond \(\(= \(length part-names\) 2\)) s
+31.4 427 M
+(         \(c:+ \(eq-get sum-node \(car part-names\)\)) s
+31.4 415 M
+(              \(eq-get sum-node \(cadr part-names\)\)) s
+31.4 403 M
+(              sum-node\)) s
+31.4 391 M
+(         'done\)) s
+31.4 379 M
+(        \(else) s
+31.4 367 M
+(         \(error "I don't know how to sum multiple parts"\)\)\)\)) s
+31.4 355 M
+(              ) s
+31.4 343 M
+(\(define \(combine-financial-entities compound . parts\)) s
+31.4 331 M
+(  \(assert \(every financial-entity? parts\)\)) s
+31.4 319 M
+(  \(cond \(\(= \(length parts\) 2\)) s
+31.4 307 M
+(         \(let \(\(p1 \(car parts\)\) \(p2 \(cadr parts\)\)\)) s
+31.4 295 M
+(           \(c:+ \(gross-income p1\) \(gross-income p2\) \(gross-income compound\)\)) s
+31.4 283 M
+(           \(c:+ \(net-income p1\) \(net-income p2\) \(net-income compound\)\)) s
+31.4 271 M
+(           \(c:+ \(expenses p1\) \(expenses p2\) \(expenses compound\)\)) s
+31.4 259 M
+(           'done\)\)) s
+31.4 247 M
+(        \(else) s
+31.4 235 M
+(         \(error "I don't know how to combine multiple parts"\)\)\)\)) s
+_R
+S
+%%Page: (18) 18
+%%BeginPageSetup
+_S
+18 36 translate
+/pagenum 18 def
+/fname (ps.txt) def
+/fdir (.) def
+/ftail (ps.txt) def
+% User defined strings:
+/fmodstr (Mon Mar 18 22:17:50 2013) def
+/pagenumstr (18) def
+/user_header_p false def
+/user_footer_p false def
+%%EndPageSetup
+do_header
+31.4 679 M
+(#|) s
+31.4 667 M
+(\(initialize-scheduler\)) s
+31.4 643 M
+(\(make-financial-entity 'Alyssa\)) s
+31.4 631 M
+(\(make-financial-entity 'Ben\)) s
+31.4 607 M
+(;;; Ben and Alyssa are married) s
+31.4 595 M
+(\(make-financial-entity 'Ben-Alyssa\)) s
+31.4 583 M
+(\(combine-financial-entities 'Ben-Alyssa 'Ben 'Alyssa\)) s
+31.4 559 M
+(;;; Ben and Alyssa file income tax jointly) s
+31.4 547 M
+(\(tell! \(gross-income 'Ben-Alyssa\) 427000 'IRS\)) s
+31.4 523 M
+(;;; Ben works at Gaggle as a software engineer.) s
+31.4 511 M
+(\(breakdown \(gross-income 'Ben\) 'Gaggle-salary 'investments\)) s
+31.4 487 M
+(;;; He gets paid alot to make good apps.) s
+31.4 475 M
+(\(tell! \(thing-of '\(Gaggle-salary gross-income Ben\)\) 200000 'Gaggle\)) s
+31.4 451 M
+(;;; Alyssa works as a PhD biochemist in big pharma.) s
+31.4 439 M
+(\(breakdown \(gross-income 'Alyssa\) 'GeneScam-salary 'investments\)) s
+31.4 415 M
+(;;; Biochemists are paid poorly.) s
+31.4 403 M
+(\(tell! \(thing-of '\(GeneScam-salary gross-income Alyssa\)\) 70000 'GeneScam\)) s
+31.4 379 M
+(\(tell! \(thing-of '\(investments gross-income Alyssa\)\)) s
+31.4 367 M
+(       \(make-interval 30000 40000\) 'Alyssa\)) s
+31.4 343 M
+(\(inquire \(thing-of '\(investments gross-income Ben\)\)\)) s
+31.4 331 M
+(;Value: #\(supported #[interval 117000 127000] \(gaggle genescam alyssa irs\)\)) s
+31.4 307 M
+(;;; Ben is a tightwad) s
+31.4 295 M
+(\(tell! \(thing-of '\(expenses Ben\)\) \(make-interval 10000 20000\) 'Ben\)) s
+31.4 271 M
+(\(inquire \(thing-of '\(net-income Ben\)\)\)) s
+31.4 259 M
+(;Value: #\(supported #[interval 297000 317000] \(ben genescam alyssa irs\)\)) s
+31.4 235 M
+(;;; But Alyssa is not cheap.  She likes luxury.) s
+31.4 223 M
+(\(tell! \(thing-of '\(expenses Alyssa\)\) \(make-interval 200000 215000\) 'Alyssa\)) s
+31.4 199 M
+(\(inquire \(thing-of '\(net-income Alyssa\)\)\)) s
+31.4 187 M
+(;Value: #\(supported #[interval -115000 -90000] \(alyssa genescam\)\)) s
+31.4 163 M
+(;;; But they are doing OK anyway!) s
+31.4 151 M
+(\(inquire \(thing-of '\(net-income Ben-Alyssa\)\)\)) s
+31.4 139 M
+(;Value: #\(supported #[interval 192000 217000] \(ben alyssa irs\)\)) s
+31.4 115 M
+(;;; Notice that this conclusion does not depend on the details, such) s
+31.4 103 M
+(;;; as Gaggle or GeneScam!) s
+31.4 91 M
+(|#) s
+_R
+S
+%%Trailer
+%%Pages: 18
+%%DocumentNeededResources: font Courier-Bold Courier 
+%%EOF
