@@ -99,7 +99,7 @@
 		     (combiner p1 sub-compound compound)))
 	  )))
 
-#|
+;#|
 (initialize-scheduler)
 
 (make-financial-entity 'Alyssa)
@@ -148,4 +148,80 @@
 
 ;;; Notice that this conclusion does not depend on the details, such
 ;;; as Gaggle or GeneScam!
-|#
+
+;;; Problem 7.3: added entities and constraints
+(make-financial-entity 'Harry)
+(make-financial-entity 'Eva)
+
+;;; Harry and Eva are married
+(make-financial-entity 'Harry-Eva)
+(combine-financial-entities 'Harry-Eva 'Harry 'Eva)
+
+;;; Harry and Eva file income tax jointly
+(tell! (gross-income 'Harry-Eva) 220000 'IRS)
+
+;;; Harry is un-employed, but has some investments
+(breakdown (gross-income 'Harry) 'salary 'investments)
+(tell! (thing-of '(salary gross-income Harry)) 0 'unemployed)
+
+;;; Eva works as a barista, but doesn't make much (varies with tips)
+(breakdown (gross-income 'Eva) 'Farducks-salary 'investments)
+(tell! (thing-of '(Farducks-salary gross-income Eva))
+       (make-interval 30000 40000) 'Farducks)
+;;; Her inheritance helps
+(tell! (thing-of '(investments gross-income Eva))
+       (make-interval 60000 75000) 'Eva)
+
+;;; Both live like hermits
+(tell! (expenses 'Harry) 20000 'Harry)
+(tell! (expenses 'Eva) 30000 'Eva)
+
+;;; Joe is not married
+(make-financial-entity 'Joe)
+
+;;; Joe is also a barista at Farducks, but has no investments
+(tell! (gross-income 'Joe)
+       (make-interval 35000 50000) 'Farducks)
+
+;;; Joe has has some expenses
+(tell! (gross-income 'Joe) 45000 'IRS)
+
+;;; Joe is an attrocious spender
+(tell! (expenses 'Joe) (make-interval 45000 75000) 'Joe)
+
+;;; All men belong to the same golf club, the Bits
+(make-financial-entity 'Bits)
+
+;;; Income for the group comes from dues and investments
+(breakdown (gross-income 'Bits) 'dues 'investments)
+
+;;; The Bits investments return a sizable sum
+
+(tell! (thing-of '(investments gross-income Bits))
+       (make-interval 60000 75000) 'investments)
+
+;;; All men pay the same dues
+(breakdown (thing-of '(expenses Ben)) 'dues 'etc)
+(breakdown (thing-of '(expenses Harry)) 'dues 'etc)
+(breakdown (thing-of '(expenses Joe)) 'dues 'etc)
+(ce:== (thing-of '(dues expenses Ben))
+       (thing-of '(dues expenses Harry))
+       (thing-of '(dues expenses Joe)))
+; need to explicitly state this equivalence
+(c:* (thing-of '(dues expenses Ben)) 3
+     (thing-of '(dues gross-income Bits)))
+
+;;; The club only has those 3 members
+(c:+ (thing-of '(dues expenses Ben))
+     (ce:+ (thing-of '(dues expenses Harry))
+	  (thing-of '(dues expenses Joe)))
+     (thing-of '(dues gross-income Bits)))
+
+;;; But maintaining a golf course is expensive!
+(tell! (expenses 'Bits) (make-interval 120000 170000) 'Bits)
+
+;;; Dues are approximately set by net difference of operating expenses
+(c:== (ce:+ (make-interval -5000 5000) (gross-income 'Bits))
+      (expenses 'Bits))
+
+;|#
