@@ -34,10 +34,11 @@
 (define (field-ref field idx)
   (let ((i (car idx))
 	(j (cadr idx)))
-    (let ((row (safe-vector-ref field j)))
-      (if row (safe-vector-ref row i) row))))
+    (let ((row (safe-vector-ref field i)))
+      (if row (safe-vector-ref row j) row))))
 
 (define (e:++ . cells)
+  (pp cells)
   (reduce (lambda (c1 c2) (e:+ c1 c2)) (constant 0) cells))
 
 (define (wire-field field)
@@ -45,9 +46,9 @@
     ;; create list of neighbors
     (define (consider-neighbor idx)
       (let ((neighbor (field-ref field idx)))
-	(if neighbor (begin (pp (list cell neighbor))
+	(if neighbor ;(begin (pp (list cell neighbor))
 		       (list neighbor)
-		       )
+		       ;)
 	    '())
 	    ))
     (eq-put! cell 'neighbors
@@ -144,3 +145,11 @@
     (wire-field field)
     (set-bombs field bombs)
     field))
+
+(define (disp-field-prop field prop)
+  (for-each (lambda (row)
+	      (for-each (lambda (cell)
+			  (display (content (prop cell))))
+			(vector->list row))
+	      (newline))
+	    (vector->list field)))
