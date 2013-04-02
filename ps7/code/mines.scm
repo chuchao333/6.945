@@ -9,11 +9,13 @@
   (list->vector (map (lambda (j) (make-new-cell i j)) (iota w))))
 
 (define (make-new-cell row col)
-  (let-cells (the-cell)
-	     (eq-put! the-cell 'bomb (make-interval 0 1))
+  (let-cells (the-cell bomb-cell count-cell)
+	     (add-content bomb-cell (make-interval 0 1))
+	     (eq-put! the-cell 'bomb bomb-cell)
 	     (eq-put! the-cell 'row row)
 	     (eq-put! the-cell 'col col)
-	     (eq-put! the-cell 'bombs-near (make-interval 0 8))
+	     (add-content count-cell (make-interval 0 8))
+	     (eq-put! the-cell 'bombs-near count-cell)
 	     (eq-put! the-cell 'neighbors '())
 	     the-cell))
 
@@ -25,30 +27,41 @@
 (define (f:neighbors cell) (f:inquire cell 'neighbors))
 
 (define (safe-vector-ref vec idx)
+  (assert (vector? vec) "given vector isn't a vector")
   (let ((l (vector-length vec)))
     (if (< -1 idx l) (vector-ref vec idx) #f)))
 
-(define (field-ref field i j)
-  (safe-vector-ref (safe-vector-ref field j) i))
+(define (field-ref field idx)
+  (let ((i (car idx))
+	(j (cadr idx)))
+    (let ((row (safe-vector-ref field j)))
+      (if row (safe-vector-ref row i) row))))
+
+(define (e:++ . cells)
+  (reduce (lambda (c1 c2) (e:+ c1 c2)) (constant 0) cells))
 
 (define (wire-field field)
   (define (wire-cell cell)
     ;; create list of neighbors
-    ;; TODO: this shouldn't need to use side-effects!
-    (define (consider-neighbor i j)
-      (let ((neighbor (field-ref field i j)))
-	(if neighbor (append! (f:neighbors cell) neighbor))))
-    (for-each (lambda (neighbor-idx)
-		(apply consider-neighbor neighbor-idx))
-	      (make-neighbor-indices (f:row cell)
-				     (f:col cell)))
+    (define (consider-neighbor idx)
+      (let ((neighbor (field-ref field idx)))
+	(if neighbor (begin (pp (list cell neighbor))
+		       (list neighbor)
+		       )
+	    '())
+	    ))
+    (eq-put! cell 'neighbors
+	     (reduce (lambda (x y) (append x y)) '()
+		     (map consider-neighbor
+			  (make-neighbor-indices (f:row cell)
+						 (f:col cell)))))
+
     ;; wire our count to our neighbors
     (let ((neighbors (f:neighbors cell)))
       (define (set-count)
-	(p:== (f:count cell) (reduce (lambda (c1 c2)
-				       (e:+ c1 (f:bomb c2)))
-				     (constant 0)
-				     neighbors)))
+	(p:id (apply e:++ (map f:bomb neighbors))
+	      (f:count cell)))
+
       (cond
        ;; could be a corner cell
        ((= (length neighbors) 3) (set-count))
@@ -57,13 +70,13 @@
        ;; could be a normal cell
        ((= (length neighbors) 8) (set-count))
        ;; anything else is wrong!
-       (else (error "impossible number of neighbors" (length neighbors)))
+       (else (begin (bkpt 'ah 'ah) (error "impossible number of neighbors" (length neighbors))))
       )
     ))
   ;; iterate over cells in field and wire each
   (for-each (lambda (row)
-	      (for-each (lambda (cell) (wire-cell cell)) row)
-	      field)))
+	      (for-each wire-cell (vector->list row)))
+	    (vector->list field)))
 
 (define (make-neighbor-indices i j)
   (let ((i-1 (- i 1)) (i+1 (+ i 1))
@@ -78,10 +91,56 @@
      (list i-1 j+1)
      (list i-1 j))))
 
-;(define (set-bombs field bombs))
+
+
+;; Sample n elements from list without replacement
+(define (sample n list)
+  (cond ((> n (length list)) (error "num samples is larger than list"))
+	((= n (length list)) list)
+	(else
+	 (let lp ((list list)
+		  (n n))
+	   (if (= n 0) '()
+	       (let ((sample (random (length list))))
+		 (cons (list-ref list sample) (lp (list-except list sample) (- n 1)))))))))
+
+;; Return list with ith element removed
+(define (list-except list i)
+  (cond
+   ((= i 0) (cdr list))
+   ((= i (- (length list) 1)) (list-head list i))
+   ((<= 0 i (- (length list) 1)) (append (list-head list i) (list-tail list (+ i 1))))
+   (else (error "invalid list index given" i))))
+
+;; assuming alt is subset of list, return all elements of list not in alt
+(define (list-xor list alt)
+  (let lp ((list list)
+	   (alt alt))
+    (if (= (length alt) 0) list
+	(lp (list-except list
+			 (find (lambda (x) (eq? (list-ref list x) (car alt)))
+			       (iota (length list))))
+	    (cdr alt)))))
+
+
+(define (set-bombs field bombs)
+  (define (set-bomb idx)
+    (let ((cell (field-ref field idx)))
+      (add-content (f:bomb cell) 1)))
+  (define (set-no-bomb idx)
+    (let ((cell (field-ref field idx)))
+      (add-content (f:bomb cell) 0)))
+
+  (let ((h (vector-length field))
+	(w (vector-length (vector-ref field 0))))
+    (define (lidx->idx lidx)
+      (list (modulo lidx w) (quotient lidx w)))
+    (let ((samples (sample bombs (iota (* h w)))))
+      (for-each set-bomb (map lidx->idx samples))
+      (for-each set-no-bomb (map lidx->idx (list-xor (iota (* h w)) samples))))))
 
 (define (new-game h w bombs)
   (let ((field (make-empty-field h w)))
     (wire-field field)
     (set-bombs field bombs)
-    ))
+    field))
