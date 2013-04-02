@@ -17,6 +17,8 @@
 	     (add-content count-cell (make-interval 0 8))
 	     (eq-put! the-cell 'bombs-near count-cell)
 	     (eq-put! the-cell 'neighbors '())
+	     (eq-put! the-cell 'clicked #f)
+	     (eq-put! the-cell 'flagged #f)
 	     the-cell))
 
 (define (f:inquire cell prop) (eq-get cell prop))
@@ -25,6 +27,11 @@
 (define (f:col cell) (f:inquire cell 'col))
 (define (f:count cell) (f:inquire cell 'bombs-near))
 (define (f:neighbors cell) (f:inquire cell 'neighbors))
+(define (f:clicked? cell) (f:inquire cell 'clicked))
+(define (f:flagged? cell) (f:inquire cell 'flagged))
+
+(define (f:bomb? cell) (= (content (f:bomb cell)) 1))
+(define (f:idx cell) (list (f:row cell) (f:col cell)))
 
 (define (safe-vector-ref vec idx)
   (assert (vector? vec) "given vector isn't a vector")
@@ -38,7 +45,7 @@
       (if row (safe-vector-ref row j) row))))
 
 (define (e:++ . cells)
-  (pp cells)
+  ;(pp cells)
   (reduce (lambda (c1 c2) (e:+ c1 c2)) (constant 0) cells))
 
 (define (wire-field field)
@@ -144,12 +151,48 @@
   (let ((field (make-empty-field h w)))
     (wire-field field)
     (set-bombs field bombs)
+    (run)
     field))
 
-(define (disp-field-prop field prop)
+(define (disp-field-proc field proc)
   (for-each (lambda (row)
 	      (for-each (lambda (cell)
-			  (display (content (prop cell))))
+			  (display (proc cell)))
 			(vector->list row))
 	      (newline))
 	    (vector->list field)))
+
+(define (disp-true-field field)
+  (disp-field-proc field
+		   (lambda (cell)
+		     (if (f:bomb? cell) "*"
+			 (content (f:count cell))))))
+
+(define (disp-field field)
+  (disp-field-proc field
+		   (lambda (cell)
+		     (cond ((f:clicked? cell)
+			    (if (f:bomb? cell) "*"
+				(content (f:count cell))))
+			   ((f:flagged? cell) "%")
+			   (else "?"))))
+  (newline))
+
+;; debugging aid
+(define (disp-field-prop field prop)
+  (disp-field-proc (lambda (cell) (content (prop cell)))))
+
+(define (click field idx)
+  (eq-put! (field-ref field idx) 'clicked #t)
+  (disp-field field)
+  (if (f:bomb? (field-ref field idx)) (begin (display "game over!") (newline))))
+
+(define (flag field idx)
+  (eq-put! (field-ref field idx) 'flagged #t)
+  (disp-field field))
+
+(define (click-unflagged-neighbors field idx)
+  ;(let ((num-flagged (reduce + 0 (map (lambda (cell) (if (f:flagged? cell) 1 0))
+  ;				      (f:neighbors (field-ref field idx))))))
+  (map (lambda (cell) (click field (f:idx cell))) (f:neighbors (field-ref field idx)))
+  (disp-field field))
