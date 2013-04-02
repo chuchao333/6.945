@@ -1,7 +1,3 @@
-
-
-(define *the-field*)
-
 (define (make-empty-field h w)
   (list->vector (map (lambda (i) (make-empty-row i w)) (iota h))))
 

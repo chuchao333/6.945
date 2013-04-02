@@ -125,6 +125,29 @@
 ;   premises=(self),
 ;   informants=((switch:p status-cell range)))
 
+
+;;; Problem 7.3
+(inquire (expenses 'Bits))
+;Value: #(value=#[interval 120000 170000],
+;   premises=(bits),
+;   informants=(user))
+
+(inquire (gross-income 'Bits))
+;Value: #(value=#[interval 115000 175000],
+;   premises=(bits),
+;   informants=((-:p cell2856 #[interval -5000 5000])))
+
+(inquire (thing-of '(dues gross-income Bits)))
+;Value: #(value=#[interval 40000 115000],
+;   premises=(investments bits),
+;   informants=((-:p gross-income part)))
+
+(inquire (thing-of '(net-income Bits)))
+;Value: #(value=#[interval -55000 55000],
+;   premises=(bits),
+;   informants=((-:p gross-income expenses)))
+
+
 ;;; Problem 7.4: Minesweeper Game
 (load "mines")
 (define f (new-game 4 4 6))
