@@ -1,0 +1,8 @@
+Owen Derby
+4/3/13
+6.945 PS7
+
+Most everything is clear from the demonstration code in ps7_demo.scm.
+
+7.4 was fun, but there's still a lot that could be done, obviously. Just not
+enough time in the week...
