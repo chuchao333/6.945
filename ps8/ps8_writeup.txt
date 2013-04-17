@@ -1,0 +1,35 @@
+6.945 PS8 Writeup
+4/17/13
+Owen Derby
+
+
+Problem 8.1: Let N be the number of elements in the nested set of pairs which
+	comprise the list, including the implicit emply list terminations
+	'(). That is, the length of the list '(a b c) is 4, because it could be
+	represented as a nested set of pairs as '(a (b (c ()))), which has 4
+	elements. Further, the list '((a) (b (c))) has length 7. We get this by
+	representing it as '((a ()) ((b ((c ()) ())) ())), which we can see has
+	7 elements. First, we note that the complexity of append is on the order
+	of the size of the first list. This translates into a cost proportional
+	to the size of (car subtree) for each non-null/terminal subtree. In the
+	worst case, each car could be of size N-2, giving us a total worst case
+	time complexity of N+N-2+N-4+... or O(N^2). The space requirement is
+	also O(N^2), because there are N-1 append operations, each of which
+	creates a new list of O(N) size.
+
+Problem 8.2.A: By thunkifying the second argument to be appended, we prevent the
+	recursion onto that part of the fringe from being executed until it
+	needs to be. If we had just used the stream-append procedure, we would
+	have needed to evaluate the call to (lazy-fringe (cdr subtree)) before
+	we could call the stream-append procedure, defeating the purpose of only
+	evaluating as much of the fringe as needed.
+
+Problem 8.3: In fact, executing the experession "(lambda () (resume-thunk))"
+	will have the same affect as calling "(resume-thunk)", assuming the
+	object pointed to by "resume-thunk" is never changed. However, in this
+	procedure, resume-thunk is reset to a new thunk after each call, to
+	enable the next invocation to return the next element of the fringe. In
+	other words, we must provide a thunk for our thunk to enable it to think
+	and set a new thunk. ;)
+
+Problem 8.4:
