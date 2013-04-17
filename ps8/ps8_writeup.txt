@@ -2,6 +2,7 @@
 4/17/13
 Owen Derby
 
+code at https://github.com/oderby/6.945/tree/master/ps8/code
 
 Problem 8.1: Let N be the number of elements in the nested set of pairs which
 	comprise the list, including the implicit emply list terminations
