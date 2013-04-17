@@ -9,3 +9,52 @@
 	  ((null? subtree) (ans))
 	  (else (cons-stream subtree (ans)))))
   (walk subtree (lambda () the-empty-stream)))
+
+;;; Problem 8.5: horribly underspecified pipe implementation
+(define (make-pipe)
+  (list (conspire:make-lock) (queue:make)))
+
+(define (lock-pipe pipe)
+  (conspire:acquire-lock (car pipe)))
+
+(define (unlock-pipe pipe)
+  (conspire:unlock (car pipe)))
+
+(define (write-pipe pipe value)
+  (lock-pipe pipe)
+  (queue:add-to-end! (cadr pipe) value)
+  (unlock-pipe pipe))
+
+(define (pipe-writer pipe)
+  (lambda (value) (write-pipe pipe value)))
+
+(define (read-pipe pipe)
+  (conspire:switch-threads (lambda () (not (queue:empty? (cadr pipe)))))
+  (lock-pipe pipe)
+  (let ((value (queue:get-first (cadr pipe))))
+    (unlock-pipe pipe)
+    value))
+
+(define (pipe-reader pipe)
+  (lambda () (read-pipe pipe)))
+
+(display (with-time-sharing-conspiracy
+ (lambda ()
+   (piped-same-fringe?
+    '((a b) c ((d)) e (f ((g h))))
+    '(a b c ((d) () e) (f (g (h)))))
+   )))
+
+(display (with-time-sharing-conspiracy
+ (lambda ()
+   (piped-same-fringe?
+    '((a b) c ((d)) e (f ((g h))))
+    '(a b c ((d) () e) (g (f (h)))))
+   )))
+
+(with-time-sharing-conspiracy
+ (lambda ()
+   (piped-same-fringe?
+    '((a b) c ((d)) e (f ((g h))))
+    '(a b c ((d) () e) (g (f ))))
+   ))
