@@ -10,7 +10,7 @@
 	  (else (cons-stream subtree (ans)))))
   (walk subtree (lambda () the-empty-stream)))
 
-;;; Problem 8.5: horribly underspecified pipe implementation
+;;; Problem 8.5: simple pipe implementation
 (define (make-pipe)
   (list (conspire:make-lock) (queue:make)))
 
@@ -38,23 +38,35 @@
 (define (pipe-reader pipe)
   (lambda () (read-pipe pipe)))
 
-(display (with-time-sharing-conspiracy
- (lambda ()
-   (piped-same-fringe?
-    '((a b) c ((d)) e (f ((g h))))
-    '(a b c ((d) () e) (f (g (h)))))
-   )))
-
-(display (with-time-sharing-conspiracy
- (lambda ()
-   (piped-same-fringe?
-    '((a b) c ((d)) e (f ((g h))))
-    '(a b c ((d) () e) (g (f (h)))))
-   )))
+;;; Problem 8.6
+(define (make-threaded-filter generator)
+  (let ((pipe (make-pipe)))
+    (let ((thread (conspire:make-thread
+		   conspire:runnable
+		   (lambda ()
+		     (generator (pipe-writer pipe))))))
+      (pipe-reader pipe))))
 
 (with-time-sharing-conspiracy
  (lambda ()
-   (piped-same-fringe?
+   (tf-piped-same-fringe?
+    '((a b) c ((d)) e (f ((g h))))
+    '(a b c ((d) () e) (f (g (h)))))
+   ))
+;Value: #t
+
+(with-time-sharing-conspiracy
+ (lambda ()
+   (tf-piped-same-fringe?
+    '((a b) c ((d)) e (f ((g h))))
+    '(a b c ((d) () e) (g (f (h)))))
+   ))
+;Value: #f
+
+(with-time-sharing-conspiracy
+ (lambda ()
+   (tf-piped-same-fringe?
     '((a b) c ((d)) e (f ((g h))))
     '(a b c ((d) () e) (g (f ))))
    ))
+;Value: #f
