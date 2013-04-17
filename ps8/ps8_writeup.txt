@@ -32,4 +32,6 @@ Problem 8.3: In fact, executing the experession "(lambda () (resume-thunk))"
 	other words, we must provide a thunk for our thunk to enable it to think
 	and set a new thunk. ;)
 
-Problem 8.4:
+Problem 8.4: You would get undeterministic behaviour because the "unspecific"
+	code block would be returned after the fringe had been generated, and
+	the program might never terminate.
