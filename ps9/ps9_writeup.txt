@@ -1,0 +1,52 @@
+Owen Derby
+6.945 PS9
+5/1/13
+
+Problem 8.1: What we are seeing is the random interleaving of the recursive
+	iterations of 'a and 'b. Because the iterations of 'a take significantly
+	more work than 'b, we see results from 'b sooner. The variations in
+	computation time and order vary across machines and runs because of the
+	different loads on the machine cause the scheme interrupts to vary, as
+	well as the actual scheme process to get interrupted to run other
+	operations on the os.
+
+Problem 8.2a: Deferring the execution of the body makes sense - that's largely
+	the motivation for having actors. Then the questions remains whether not
+	deferring the evaluation of the operands until the actor is run is a
+	good idea or not. By evaluating the operands at application time, we see
+	several benefits. First, it a very clear and straightforward to
+	implement - we simply evaluate each argument in the current
+	environment. This ensures we see behavior we expect. Second, this
+	ensures that our actor programs remain repeatable - that is, if we
+	delayed evaluation of operands, we could see different results depending
+	on the order in which other operations were interleaved between
+	evaluating the operands. This makes our programs easier to debug.
+
+	However, delaying evaluation of operands has its benefits. For one, we
+	would see further gains from parallelism, as we could continue on with
+	our program as our operands are evaluated.
+
+Problem 8.2b: To clarify, I'm assuming we defer the evaluation of operands until
+	the actor runs (as opposed to the lazy evaluation of previous problem
+	sets).
+
+Problem 8.2c: There may be cases where this would be a useful feature - like if
+	there is some computation we'd like to run to compute one of the
+	arguments that's very expensive - we'd only like to run it once the
+	actor is scheduled...But then, I suppose we could just make the
+	evaluation of that argument into an alpha expression...so maybe it's not
+	so useful...
+
+Problem 8.3: double-check-lock is necessary because setting variable values
+	needs to be an automic operation. In the particular case when we are
+	defining a variable for the first time, we do not want to define the
+	variable (by binding the variable name to the value in the environment)
+	without ensuring we have a lock on the environment. However, we can't
+	know if we have this case until we've checked that the variable isn't
+	already defined in the environment. So we use double-check-lock after we
+	saw that the variable was undefined to ensure that the variable is still
+	undefined when we set it.
+
+	double-check-lock does exactly this. It automically checks the given
+	condition, and iff it's true does it go ahead and run the desired
+	operation. Otherwise, it returns the failure case.
