@@ -1,5 +1,5 @@
-(load "load")
-
+;(load "load")
+;;; Problem 8.2b
 (defhandler apply
   (lambda (actor operands calling-environment)
     (if (not (= (length (actor-parameters actor))
@@ -28,14 +28,3 @@
 			 'evaluate-operand
 			 (lambda (parameter operand environment)
 			   (lambda () (eval operand environment)))))
-
-;;;(define (lookup-variable-value var env)
-;;;  (let plp ((env env))
-;;;    (if (eq? env the-empty-environment)
-;;;	(lookup-scheme-value var)
-;;;	(let scan
-;;;	    ((vars (vector-ref env 0))
-;;;	     (vals (vector-ref env 1)))
-;;;	  (cond ((null? vars) (plp (vector-ref env 2)))
-;;;		((eq? var (car vars)) (car vals))
-;;;		(else (scan (cdr vars) (cdr vals))))))))

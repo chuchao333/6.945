@@ -50,3 +50,12 @@ Problem 8.3: double-check-lock is necessary because setting variable values
 	double-check-lock does exactly this. It automically checks the given
 	condition, and iff it's true does it go ahead and run the desired
 	operation. Otherwise, it returns the failure case.
+
+Problem 8.4: I expect fib2 will run faster, because it is continuously computing
+	on the problem and maing progress. Whereas with fib1, the busy-waiting
+	eats up to a third of the cpu time doing nothing.
+
+	The results were as expected, although the disparity in times was
+	greater. fib1 took ~100 quantums to compute the answer, while fib2 only
+	took ~35. We see this is because for every 3 quantums run for fib1, only
+	one makes actual progress.
