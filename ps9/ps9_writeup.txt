@@ -59,3 +59,21 @@ Problem 8.4: I expect fib2 will run faster, because it is continuously computing
 	greater. fib1 took ~100 quantums to compute the answer, while fib2 only
 	took ~35. We see this is because for every 3 quantums run for fib1, only
 	one makes actual progress.
+
+Problem 8.5a: added simple record structure
+
+Problem 8.5b: My head hurts...I know that I want FUTURE to return a future
+	object which can be executed via a call to WAIT, which will call the
+	provided continuation with the result of executing the chain of
+	computation promised by the future object. But how to glue it all
+	together is eluding me.
+
+Problem 8.5c: If a future is waited on more than once, I would expect most
+	implementations would see only the first invocation producing meaningful
+	results. The rest would effectively be No-Ops, since there's no way to
+	"reset" the future, which is what we'd need.
+
+Problem 8.5d: To relax this assumption, we can provide a way to reset a future
+	to it's initial state. We could implement this by simply keeping a
+	field for the future which contains the initial structure/code it ought
+	to be reset to.

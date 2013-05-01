@@ -1,4 +1,4 @@
-;;; -*- Mode:Scheme -*- 
+;;; -*- Mode:Scheme -*-
 
 (declare (usual-integrations))
 
@@ -44,8 +44,20 @@ http://groups.csail.mit.edu/mac/projects/scheme/documentation/scheme_11.html#SEC
   (task-queue get-actor-task-queue set-actor-task-queue!)
   (runnable actor-runnable? set-actor-runnable!))
 
+;; Problem 8.5a
+(define-record-type future
+    (make-future% cont done value)
+    future?
+  (cont future-cont)
+  (done done? future-set-done!)
+  (value future-value future-set-value!))
+
 (define (make-actor-procedure vars bproc env)
   (make-actor-procedure% vars bproc env (queue:make) #f))
+
+(define (make-future k)
+  (make-future% k #f 'none))
+
 
 ;;; An ENVIRONMENT is a chain of FRAMES, made of vectors.
 
@@ -87,7 +99,7 @@ http://groups.csail.mit.edu/mac/projects/scheme/documentation/scheme_11.html#SEC
 	(cond ((null? vars)
 	       (double-check-lock
 		(lambda () (null? vars))
-		(lambda () 
+		(lambda ()
 		  (vector-set! env 0 (cons var (vector-ref env 0)))
 		  (vector-set! env 1 (cons val (vector-ref env 1))))
 		(lambda ()
@@ -112,5 +124,3 @@ http://groups.csail.mit.edu/mac/projects/scheme/documentation/scheme_11.html#SEC
 		  (lambda ()
 		    (set-car! vals val))))
 		(else (scan (cdr vars) (cdr vals))))))))
-
-
