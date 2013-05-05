@@ -2,6 +2,8 @@ Owen Derby
 6.945 PS9
 5/1/13
 
+code:https://github.com/oderby/6.945/tree/master/ps9/code
+
 Problem 8.1: What we are seeing is the random interleaving of the recursive
 	iterations of 'a and 'b. Because the iterations of 'a take significantly
 	more work than 'b, we see results from 'b sooner. The variations in
